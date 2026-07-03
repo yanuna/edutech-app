@@ -21,6 +21,10 @@ import 'features/auth/screens/forgot_password_screen.dart';
 import 'features/auth/screens/verify_email_screen.dart';
 import 'features/auth/screens/verify_mobile_screen.dart';
 import 'features/home/home_screen.dart';
+import 'features/learn/screens/learn_screen.dart';
+import 'features/learn/screens/articles_list_screen.dart';
+import 'features/learn/screens/article_reader_screen.dart';
+import 'features/practice/screens/practice_screen.dart';
 import 'features/catalog/screens/subjects_screen.dart';
 import 'features/catalog/screens/chapters_screen.dart';
 import 'features/catalog/screens/topics_screen.dart';
@@ -60,6 +64,9 @@ class _AppShell extends ConsumerWidget {
   static const List<
     ({int branch, IconData icon, IconData active, String label, String? module})
   >
+  // Display order: Home · Learn · Practice · Current Affairs · Profile.
+  // `branch` maps each tab to its StatefulShellBranch index (unchanged), so
+  // existing deep routes keep working while the visible order/labels change.
   _tabs = [
     (
       branch: 0,
@@ -70,17 +77,24 @@ class _AppShell extends ConsumerWidget {
     ),
     (
       branch: 1,
-      icon: Icons.library_books_outlined,
-      active: Icons.library_books,
-      label: 'Study',
+      icon: Icons.menu_book_outlined,
+      active: Icons.menu_book,
+      label: 'Learn',
       module: 'study_material',
     ),
     (
       branch: 2,
-      icon: Icons.quiz_outlined,
-      active: Icons.quiz,
-      label: 'Exam',
+      icon: Icons.edit_note_outlined,
+      active: Icons.edit_note,
+      label: 'Practice',
       module: 'exam',
+    ),
+    (
+      branch: 4,
+      icon: Icons.newspaper_outlined,
+      active: Icons.newspaper,
+      label: 'Current Affairs',
+      module: 'news',
     ),
     (
       branch: 3,
@@ -88,13 +102,6 @@ class _AppShell extends ConsumerWidget {
       active: Icons.person,
       label: 'Profile',
       module: null,
-    ),
-    (
-      branch: 4,
-      icon: Icons.newspaper_outlined,
-      active: Icons.newspaper,
-      label: 'News',
-      module: 'news',
     ),
   ];
 
@@ -210,8 +217,10 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
             ],
           ),
+          // Branch 1: Learn (hub) + legacy study-material browse (unchanged).
           StatefulShellBranch(
             routes: [
+              GoRoute(path: '/learn', builder: (_, _) => const LearnScreen()),
               GoRoute(
                 path: '/subjects',
                 builder: (_, _) => const SubjectsScreen(),
@@ -246,8 +255,10 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          // Branch 2: Practice (hub) + legacy exam/test-series flow (unchanged).
           StatefulShellBranch(
             routes: [
+              GoRoute(path: '/practice', builder: (_, _) => const PracticeScreen()),
               GoRoute(
                 path: '/exam',
                 builder: (_, _) => const ExamHistoryScreen(),
@@ -353,6 +364,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/govt-jobs/:slug',
         builder: (_, s) => GovtJobDetailScreen(slug: s.pathParameters['slug']!),
+      ),
+
+      // Learn — Articles (full-screen over the shell, like PYQs).
+      GoRoute(
+        path: '/learn/subject/:id',
+        builder: (_, s) => ArticlesListScreen(
+          subjectId: int.parse(s.pathParameters['id']!),
+          subjectName: s.uri.queryParameters['name'] ?? '',
+        ),
+      ),
+      GoRoute(
+        path: '/learn/article/:slug',
+        builder: (_, s) => ArticleReaderScreen(slug: s.pathParameters['slug']!),
       ),
 
       // Previous Year Questions (full-screen, pushed from Home).

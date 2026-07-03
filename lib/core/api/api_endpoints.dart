@@ -39,6 +39,10 @@ class ApiEndpoints {
   static String topics(int cid) => '/catalog/chapters/$cid/topics';
   static String topicContent(int tid) => '/topics/$tid/content';
 
+  // Learn — structured Articles (Content v2)
+  static const articles = '/articles';
+  static String article(String slug) => '/articles/$slug';
+
   // Previous Year Questions (view-only PDFs streamed for the secure viewer)
   static const pyqs = '/pyqs';
   static String pyqsForYear(int year) => '/pyqs?year=$year';
