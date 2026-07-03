@@ -24,6 +24,11 @@ class LearnScreen extends ConsumerWidget {
         title: const Text('Learn'),
         actions: [
           IconButton(
+            tooltip: 'Search',
+            icon: const Icon(Icons.search_rounded),
+            onPressed: () => context.push('/search'),
+          ),
+          IconButton(
             tooltip: 'Saved',
             icon: const Icon(Icons.bookmark_border_rounded),
             onPressed: () => context.push('/learn/saved'),

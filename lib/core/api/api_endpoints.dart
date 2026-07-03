@@ -50,6 +50,9 @@ class ApiEndpoints {
   static String articleInteractions(String slug) => '/articles/$slug/interactions';
   static String articleProgress(String slug) => '/articles/$slug/progress';
 
+  // Universal search
+  static String search(String q) => '/search?q=${Uri.encodeQueryComponent(q)}';
+
   // Previous Year Questions (view-only PDFs streamed for the secure viewer)
   static const pyqs = '/pyqs';
   static String pyqsForYear(int year) => '/pyqs?year=$year';
