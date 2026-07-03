@@ -43,6 +43,9 @@ class ApiEndpoints {
   static const articles = '/articles';
   static String article(String slug) => '/articles/$slug';
 
+  // Structured Current Affairs (Articles with type=current_affairs)
+  static String currentAffairs(String period) => '/current-affairs?period=$period';
+
   // Learn — user ↔ article interactions (Module 4)
   static const bookmarkToggle = '/bookmarks/toggle';
   static String bookmarks(String type) => '/bookmarks?type=$type';

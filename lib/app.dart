@@ -51,6 +51,7 @@ import 'features/profile/screens/edit_profile_screen.dart';
 import 'features/profile/screens/referral_screen.dart';
 import 'features/gamification/screens/leaderboard_screen.dart';
 import 'features/news/screens/current_news_screen.dart';
+import 'features/current_affairs/screens/current_affairs_screen.dart';
 import 'features/govt_jobs/screens/govt_jobs_screen.dart';
 import 'features/govt_jobs/screens/govt_job_detail_screen.dart';
 import 'features/govt_jobs/screens/saved_jobs_screen.dart';
@@ -170,7 +171,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             loc.startsWith('/login') ||
             loc.startsWith('/register') ||
             loc.startsWith('/forgot-password') ||
-            loc.startsWith('/news')) {
+            loc.startsWith('/news') ||
+            loc.startsWith('/current-affairs')) {
           return null;
         }
         return '/login';
@@ -349,9 +351,13 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // ── Branch 4: News ──────────────────────────────────────────────
+          // ── Branch 4: Current Affairs (structured) + RSS news feed ──────
           StatefulShellBranch(
             routes: [
+              GoRoute(
+                path: '/current-affairs',
+                builder: (_, _) => const CurrentAffairsScreen(),
+              ),
               GoRoute(
                 path: '/news',
                 builder: (_, _) => const CurrentNewsScreen(),

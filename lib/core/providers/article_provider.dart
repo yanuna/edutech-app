@@ -48,6 +48,15 @@ final articleListProvider = FutureProvider.family<List<ArticleCard>, ArticleQuer
       .toList();
 });
 
+/// Structured Current Affairs for a period ('daily' | 'weekly' | 'monthly').
+final currentAffairsProvider = FutureProvider.family<List<ArticleCard>, String>((ref, period) async {
+  final lang = ref.watch(contentLanguageProvider);
+  final res = await ApiClient.instance.get(ApiEndpoints.currentAffairs(period), params: {'lang': lang});
+  return ((res.data['articles'] as List?) ?? const [])
+      .map((e) => ArticleCard.fromJson((e as Map).cast<String, dynamic>()))
+      .toList();
+});
+
 /// The user's in-progress (not finished) articles — Home "Continue Reading".
 final continueReadingProvider = FutureProvider.autoDispose<List<ArticleCard>>((ref) async {
   return ArticleInteractionService.continueReading();
