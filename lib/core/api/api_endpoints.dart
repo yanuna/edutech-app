@@ -63,6 +63,11 @@ class ApiEndpoints {
   // Progress dashboard
   static const dashboard = '/me/dashboard';
 
+  // PYQ question-level browse + trends
+  static const pyqQuestions = '/pyq-questions';
+  static const pyqTrends = '/pyq-questions/trends';
+  static const pyqFilters = '/pyq-questions/filters';
+
   // Previous Year Questions (view-only PDFs streamed for the secure viewer)
   static const pyqs = '/pyqs';
   static String pyqsForYear(int year) => '/pyqs?year=$year';

@@ -23,7 +23,16 @@ class _PyqScreenState extends ConsumerState<PyqScreen> {
     final async = ref.watch(pyqIndexProvider(_year));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Previous Year Questions')),
+      appBar: AppBar(
+        title: const Text('Previous Year Questions'),
+        actions: [
+          IconButton(
+            tooltip: 'Question Bank',
+            icon: const Icon(Icons.quiz_outlined),
+            onPressed: () => context.push('/pyqs/bank'),
+          ),
+        ],
+      ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => _Message(

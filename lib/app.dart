@@ -56,6 +56,8 @@ import 'features/govt_jobs/screens/govt_jobs_screen.dart';
 import 'features/govt_jobs/screens/govt_job_detail_screen.dart';
 import 'features/govt_jobs/screens/saved_jobs_screen.dart';
 import 'features/pyq/pyq_screen.dart';
+import 'features/pyq/screens/pyq_question_bank_screen.dart';
+import 'features/pyq/screens/pyq_trends_screen.dart';
 import 'shared/widgets/secure_pdf_viewer.dart';
 import 'core/services/pyq_service.dart';
 
@@ -402,6 +404,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Previous Year Questions (full-screen, pushed from Home).
       GoRoute(path: '/pyqs', builder: (_, _) => const PyqScreen()),
+      GoRoute(path: '/pyqs/bank', builder: (_, _) => const PyqQuestionBankScreen()),
+      GoRoute(path: '/pyqs/trends', builder: (_, _) => const PyqTrendsScreen()),
       // Secure in-app viewer: view-only, downloads bytes to memory + caches
       // them AES-encrypted for offline (see PyqService / SecureFileStore).
       GoRoute(
