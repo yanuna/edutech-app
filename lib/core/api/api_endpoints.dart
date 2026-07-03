@@ -39,6 +39,24 @@ class ApiEndpoints {
   static String topics(int cid) => '/catalog/chapters/$cid/topics';
   static String topicContent(int tid) => '/topics/$tid/content';
 
+  // Learn — structured Articles (Content v2)
+  static const articles = '/articles';
+  static String article(String slug) => '/articles/$slug';
+
+  // Learn — user ↔ article interactions (Module 4)
+  static const bookmarkToggle = '/bookmarks/toggle';
+  static String bookmarks(String type) => '/bookmarks?type=$type';
+  static const continueReading = '/me/reading';
+  static String articleInteractions(String slug) => '/articles/$slug/interactions';
+  static String articleProgress(String slug) => '/articles/$slug/progress';
+
+  // Universal search
+  static String search(String q) => '/search?q=${Uri.encodeQueryComponent(q)}';
+
+  // Practice review banks
+  static const wrongQuestions = '/practice/wrong-questions';
+  static const bookmarkedQuestions = '/practice/bookmarked-questions';
+
   // Previous Year Questions (view-only PDFs streamed for the secure viewer)
   static const pyqs = '/pyqs';
   static String pyqsForYear(int year) => '/pyqs?year=$year';
