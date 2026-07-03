@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "472698647575",
+    "project_id": "notesnexam-9041a",
+    "storage_bucket": "notesnexam-9041a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:472698647575:android:b3f84000049bb4db141852",
+        "android_client_info": {
+          "package_name": "com.edutech.edutech_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "472698647575-54v3kgvma08tk0o8lnqirtdji06mv2uf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.edutech.edutech_app",
+            "certificate_hash": "04aa00c2e2034c28e1ec02ea664d756695c59cef"
+          }
+        },
+        {
+          "client_id": "472698647575-6p6e0u27v56lvuu5bb81gvccfgn0rpve.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLpukABnUHI53IymDI9xh3a6cLgg19ues"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "472698647575-6p6e0u27v56lvuu5bb81gvccfgn0rpve.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
