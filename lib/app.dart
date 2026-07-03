@@ -52,6 +52,8 @@ import 'features/profile/screens/referral_screen.dart';
 import 'features/gamification/screens/leaderboard_screen.dart';
 import 'features/news/screens/current_news_screen.dart';
 import 'features/current_affairs/screens/current_affairs_screen.dart';
+import 'features/notes/screens/notes_screen.dart';
+import 'features/notes/screens/editorials_screen.dart';
 import 'features/govt_jobs/screens/govt_jobs_screen.dart';
 import 'features/govt_jobs/screens/govt_job_detail_screen.dart';
 import 'features/govt_jobs/screens/saved_jobs_screen.dart';
@@ -394,6 +396,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/learn/saved', builder: (_, _) => const SavedArticlesScreen()),
       GoRoute(path: '/search', builder: (_, _) => const SearchScreen()),
+      GoRoute(path: '/notes', builder: (_, _) => const NotesScreen()),
+      GoRoute(path: '/editorials', builder: (_, _) => const EditorialsScreen()),
       GoRoute(
         path: '/practice/review/:mode',
         builder: (_, s) => QuestionReviewScreen(mode: s.pathParameters['mode']!),

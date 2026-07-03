@@ -29,6 +29,11 @@ class _CurrentAffairsScreenState extends ConsumerState<CurrentAffairsScreen> {
         title: const Text('Current Affairs'),
         actions: [
           IconButton(
+            tooltip: 'Editorials',
+            icon: const Icon(Icons.menu_book_outlined),
+            onPressed: () => context.push('/editorials'),
+          ),
+          IconButton(
             tooltip: 'News feed',
             icon: const Icon(Icons.rss_feed_rounded),
             onPressed: () => context.push('/news'),

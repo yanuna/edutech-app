@@ -46,6 +46,10 @@ class ApiEndpoints {
   // Structured Current Affairs (Articles with type=current_affairs)
   static String currentAffairs(String period) => '/current-affairs?period=$period';
 
+  // Notes & Editorials (Articles with type=note / editorial)
+  static const notes = '/notes';
+  static const editorials = '/editorials';
+
   // Learn — user ↔ article interactions (Module 4)
   static const bookmarkToggle = '/bookmarks/toggle';
   static String bookmarks(String type) => '/bookmarks?type=$type';
