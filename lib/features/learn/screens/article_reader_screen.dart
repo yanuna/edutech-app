@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/models/article.dart';
 import '../../../core/providers/article_provider.dart';
+import '../../../core/services/article_interaction_service.dart';
 import '../providers/reader_settings_provider.dart';
 import '../widgets/article_block_view.dart';
 
@@ -23,17 +26,35 @@ class _ArticleReaderScreenState extends ConsumerState<ArticleReaderScreen> {
   final Map<int, GlobalKey> _blockKeys = {}; // block index → key (for the TOC)
   double _progress = 0;
 
+  // ── Module 4: bookmark + reading-progress state ──────────────────────────
+  bool _bookmarked = false;
+  bool _bmBusy = false;
+  int? _articleId; // set once the article loads (needed for bookmark toggle)
+  Timer? _saveTimer;
+  int _savedPercent = 0;
+  DateTime _lastSaveAt = DateTime.now();
+
   @override
   void initState() {
     super.initState();
     _scroll.addListener(_onScroll);
+    _hydrate();
   }
 
   @override
   void dispose() {
+    _saveTimer?.cancel();
+    _flushProgress(); // persist the final read position
     _scroll.removeListener(_onScroll);
     _scroll.dispose();
     super.dispose();
+  }
+
+  Future<void> _hydrate() async {
+    try {
+      final i = await ArticleInteractionService.fetch(widget.slug);
+      if (mounted) setState(() { _bookmarked = i.bookmarked; _savedPercent = i.progressPercent; });
+    } catch (_) {/* interactions are best-effort (e.g. offline) */}
   }
 
   void _onScroll() {
@@ -41,6 +62,31 @@ class _ArticleReaderScreenState extends ConsumerState<ArticleReaderScreen> {
     final max = _scroll.position.maxScrollExtent;
     final p = max <= 0 ? 0.0 : (_scroll.offset / max).clamp(0.0, 1.0);
     if ((p - _progress).abs() > 0.01) setState(() => _progress = p);
+    // Debounce progress writes to ~1.5s after scrolling settles.
+    _saveTimer?.cancel();
+    _saveTimer = Timer(const Duration(milliseconds: 1500), _flushProgress);
+  }
+
+  void _flushProgress() {
+    final percent = (_progress * 100).round();
+    if (percent <= _savedPercent) return; // forward-only; skip no-ops
+    final seconds = DateTime.now().difference(_lastSaveAt).inSeconds.clamp(0, 3600);
+    _lastSaveAt = DateTime.now();
+    _savedPercent = percent;
+    ArticleInteractionService.saveProgress(widget.slug, percent: percent, seconds: seconds);
+  }
+
+  Future<void> _toggleBookmark() async {
+    if (_articleId == null || _bmBusy) return;
+    setState(() { _bmBusy = true; _bookmarked = !_bookmarked; }); // optimistic
+    try {
+      final now = await ArticleInteractionService.toggleBookmark(type: 'article', id: _articleId!);
+      if (mounted) setState(() => _bookmarked = now);
+    } catch (_) {
+      if (mounted) setState(() => _bookmarked = !_bookmarked); // revert on failure
+    } finally {
+      if (mounted) setState(() => _bmBusy = false);
+    }
   }
 
   @override
@@ -73,6 +119,7 @@ class _ArticleReaderScreenState extends ConsumerState<ArticleReaderScreen> {
   }
 
   Widget _body(Article article, ReaderSettings settings) {
+    _articleId = article.card.id; // enable the bookmark toggle
     final theme = settings.theme;
     final headings = <({int index, String title})>[];
     for (var i = 0; i < article.body.length; i++) {
@@ -90,6 +137,11 @@ class _ArticleReaderScreenState extends ConsumerState<ArticleReaderScreen> {
           expandedHeight: article.card.heroImage != null ? 220 : 0,
           leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.pop()),
           actions: [
+            IconButton(
+              tooltip: _bookmarked ? 'Saved' : 'Save',
+              icon: Icon(_bookmarked ? Icons.bookmark : Icons.bookmark_border_rounded),
+              onPressed: _bmBusy ? null : _toggleBookmark,
+            ),
             if (headings.isNotEmpty)
               IconButton(tooltip: 'Contents', icon: const Icon(Icons.list_rounded), onPressed: () => _openToc(headings, theme)),
             IconButton(tooltip: 'Reading options', icon: const Icon(Icons.text_fields_rounded), onPressed: () => _openSettings()),

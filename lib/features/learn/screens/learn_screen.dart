@@ -23,6 +23,11 @@ class LearnScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Learn'),
         actions: [
+          IconButton(
+            tooltip: 'Saved',
+            icon: const Icon(Icons.bookmark_border_rounded),
+            onPressed: () => context.push('/learn/saved'),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: TextButton(

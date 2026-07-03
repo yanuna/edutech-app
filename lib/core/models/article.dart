@@ -41,10 +41,15 @@ class ArticleCard {
     difficulty: j['difficulty'] as String? ?? 'medium',
     gsPaper: ((j['gs_paper'] as List?) ?? const []).map((e) => e.toString()).toList(),
     isFeatured: j['is_featured'] as bool? ?? false,
-    subjectName: (j['subject'] as Map?)?['name'] as String?,
-    topicName: (j['topic'] as Map?)?['name'] as String?,
+    // `subject`/`topic` come as {id,name} from the article endpoints but as a
+    // plain name string from bookmarks / continue-reading — accept both.
+    subjectName: _name(j['subject']),
+    topicName: _name(j['topic']),
     publishedAt: j['published_at'] as String?,
   );
+
+  /// Accepts either a `{id, name}` object or a bare name string (or null).
+  static String? _name(dynamic v) => v is Map ? v['name'] as String? : v as String?;
 }
 
 /// One typed content block, e.g. {type: 'rich_text', data: {html: '...'}}.
