@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/api_client.dart';
 import '../api/api_endpoints.dart';
 import '../models/article.dart';
+import '../services/article_interaction_service.dart';
 import 'catalog_provider.dart' show contentLanguageProvider;
 
 /// Filter for an article list query. Immutable + value-equal so Riverpod can
@@ -45,6 +46,11 @@ final articleListProvider = FutureProvider.family<List<ArticleCard>, ArticleQuer
   return ((res.data['articles'] as List?) ?? const [])
       .map((e) => ArticleCard.fromJson((e as Map).cast<String, dynamic>()))
       .toList();
+});
+
+/// The user's in-progress (not finished) articles — Home "Continue Reading".
+final continueReadingProvider = FutureProvider.autoDispose<List<ArticleCard>>((ref) async {
+  return ArticleInteractionService.continueReading();
 });
 
 /// Full article (body blocks + related graph) by slug.
