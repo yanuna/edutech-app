@@ -164,6 +164,23 @@ class ProfileScreen extends ConsumerWidget {
                   const SizedBox(height: 24),
 
                   _Section(
+                    title: 'Learning',
+                    tiles: [
+                      _Tile(
+                        icon: Icons.bookmarks_outlined,
+                        label: 'Revision Hub',
+                        onTap: () => context.push('/revision'),
+                      ),
+                      _Tile(
+                        icon: Icons.insights_outlined,
+                        label: 'My Progress',
+                        onTap: () => context.push('/progress'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  _Section(
                     title: 'Account',
                     tiles: [
                       _Tile(

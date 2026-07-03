@@ -29,6 +29,8 @@ import 'features/search/screens/search_screen.dart';
 import 'features/practice/screens/practice_screen.dart';
 import 'features/practice/screens/question_review_screen.dart';
 import 'features/progress/screens/progress_dashboard_screen.dart';
+import 'features/revision/screens/revision_hub_screen.dart';
+import 'features/revision/screens/flashcards_screen.dart';
 import 'features/catalog/screens/subjects_screen.dart';
 import 'features/catalog/screens/chapters_screen.dart';
 import 'features/catalog/screens/topics_screen.dart';
@@ -389,6 +391,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, s) => QuestionReviewScreen(mode: s.pathParameters['mode']!),
       ),
       GoRoute(path: '/progress', builder: (_, _) => const ProgressDashboardScreen()),
+      GoRoute(path: '/revision', builder: (_, _) => const RevisionHubScreen()),
+      GoRoute(path: '/revision/flashcards', builder: (_, _) => const FlashcardsScreen()),
 
       // Previous Year Questions (full-screen, pushed from Home).
       GoRoute(path: '/pyqs', builder: (_, _) => const PyqScreen()),
