@@ -117,8 +117,9 @@ class _QuickAccessRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      (icon: Icons.menu_book_rounded, label: 'Study Material', color: const Color(0xFF6366F1), onTap: () => context.push('/subjects')),
+      (icon: Icons.menu_book_rounded, label: 'Study', color: const Color(0xFF6366F1), onTap: () => context.push('/subjects')),
       (icon: Icons.sticky_note_2_rounded, label: 'Notes', color: const Color(0xFF7C3AED), onTap: () => context.push('/notes')),
+      (icon: Icons.auto_stories_rounded, label: 'Books', color: const Color(0xFF059669), onTap: () => context.push('/books')),
       (icon: Icons.history_edu_rounded, label: 'PYQs', color: const Color(0xFF0EA5E9), onTap: () => context.push('/pyqs')),
     ];
     return Row(

@@ -55,6 +55,7 @@ import 'features/current_affairs/screens/current_affairs_screen.dart';
 import 'features/notes/screens/notes_screen.dart';
 import 'features/notes/screens/editorials_screen.dart';
 import 'features/entities/screens/entities_screen.dart';
+import 'features/books/screens/books_screen.dart';
 import 'features/govt_jobs/screens/govt_jobs_screen.dart';
 import 'features/govt_jobs/screens/govt_job_detail_screen.dart';
 import 'features/govt_jobs/screens/saved_jobs_screen.dart';
@@ -400,6 +401,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/notes', builder: (_, _) => const NotesScreen()),
       GoRoute(path: '/editorials', builder: (_, _) => const EditorialsScreen()),
       GoRoute(path: '/entities', builder: (_, _) => const EntitiesScreen()),
+      GoRoute(path: '/books', builder: (_, _) => const BooksScreen()),
       GoRoute(path: '/entities/:slug', builder: (_, s) => EntityDetailScreen(slug: s.pathParameters['slug']!)),
       GoRoute(
         path: '/practice/review/:mode',

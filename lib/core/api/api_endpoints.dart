@@ -54,6 +54,9 @@ class ApiEndpoints {
   static String entities(String type) => '/entities?type=$type';
   static String entity(String slug) => '/entities/$slug';
 
+  // Books reference library
+  static const books = '/books';
+
   // Learn — user ↔ article interactions (Module 4)
   static const bookmarkToggle = '/bookmarks/toggle';
   static String bookmarks(String type) => '/bookmarks?type=$type';
