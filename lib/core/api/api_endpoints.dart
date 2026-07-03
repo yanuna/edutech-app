@@ -57,6 +57,9 @@ class ApiEndpoints {
   static const wrongQuestions = '/practice/wrong-questions';
   static const bookmarkedQuestions = '/practice/bookmarked-questions';
 
+  // Progress dashboard
+  static const dashboard = '/me/dashboard';
+
   // Previous Year Questions (view-only PDFs streamed for the secure viewer)
   static const pyqs = '/pyqs';
   static String pyqsForYear(int year) => '/pyqs?year=$year';

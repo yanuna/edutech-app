@@ -20,6 +20,7 @@ class PracticeScreen extends ConsumerWidget {
       _PracticeAction('Wrong Questions', 'Revise every question you got wrong', Icons.rule_rounded, const Color(0xFFEF4444), () => context.push('/practice/review/wrong')),
       _PracticeAction('Bookmarked MCQs', 'Questions you saved for later', Icons.bookmark_added_outlined, const Color(0xFF0EA5E9), () => context.push('/practice/review/bookmarked')),
       _PracticeAction('My Attempts', 'Review your past tests & scores', Icons.history_rounded, const Color(0xFF10B981), () => context.push('/exam')),
+      _PracticeAction('My Progress', 'Accuracy, reading time & weak areas', Icons.insights_rounded, const Color(0xFF0F766E), () => context.push('/progress')),
       _PracticeAction('Leaderboard', 'See where you rank', Icons.leaderboard_outlined, const Color(0xFF7C3AED), () => context.push('/profile/leaderboard')),
     ];
 
