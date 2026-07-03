@@ -27,6 +27,7 @@ import 'features/learn/screens/article_reader_screen.dart';
 import 'features/learn/screens/saved_articles_screen.dart';
 import 'features/search/screens/search_screen.dart';
 import 'features/practice/screens/practice_screen.dart';
+import 'features/practice/screens/question_review_screen.dart';
 import 'features/catalog/screens/subjects_screen.dart';
 import 'features/catalog/screens/chapters_screen.dart';
 import 'features/catalog/screens/topics_screen.dart';
@@ -382,6 +383,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/learn/saved', builder: (_, _) => const SavedArticlesScreen()),
       GoRoute(path: '/search', builder: (_, _) => const SearchScreen()),
+      GoRoute(
+        path: '/practice/review/:mode',
+        builder: (_, s) => QuestionReviewScreen(mode: s.pathParameters['mode']!),
+      ),
 
       // Previous Year Questions (full-screen, pushed from Home).
       GoRoute(path: '/pyqs', builder: (_, _) => const PyqScreen()),

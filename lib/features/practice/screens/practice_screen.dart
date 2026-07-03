@@ -17,6 +17,8 @@ class PracticeScreen extends ConsumerWidget {
       _PracticeAction('Start Practice', 'Custom MCQ test by subject & topic', Icons.play_circle_outline, const Color(0xFF6366F1), () => context.push('/exam/setup')),
       if (mods.contains('test_series'))
         _PracticeAction('Test Series', 'Full & sectional mock exams with ranking', Icons.emoji_events_outlined, const Color(0xFFF59E0B), () => context.push('/exam/test-series')),
+      _PracticeAction('Wrong Questions', 'Revise every question you got wrong', Icons.rule_rounded, const Color(0xFFEF4444), () => context.push('/practice/review/wrong')),
+      _PracticeAction('Bookmarked MCQs', 'Questions you saved for later', Icons.bookmark_added_outlined, const Color(0xFF0EA5E9), () => context.push('/practice/review/bookmarked')),
       _PracticeAction('My Attempts', 'Review your past tests & scores', Icons.history_rounded, const Color(0xFF10B981), () => context.push('/exam')),
       _PracticeAction('Leaderboard', 'See where you rank', Icons.leaderboard_outlined, const Color(0xFF7C3AED), () => context.push('/profile/leaderboard')),
     ];

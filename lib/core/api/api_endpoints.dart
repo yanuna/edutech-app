@@ -53,6 +53,10 @@ class ApiEndpoints {
   // Universal search
   static String search(String q) => '/search?q=${Uri.encodeQueryComponent(q)}';
 
+  // Practice review banks
+  static const wrongQuestions = '/practice/wrong-questions';
+  static const bookmarkedQuestions = '/practice/bookmarked-questions';
+
   // Previous Year Questions (view-only PDFs streamed for the secure viewer)
   static const pyqs = '/pyqs';
   static String pyqsForYear(int year) => '/pyqs?year=$year';
