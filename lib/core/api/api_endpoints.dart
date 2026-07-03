@@ -50,6 +50,10 @@ class ApiEndpoints {
   static const notes = '/notes';
   static const editorials = '/editorials';
 
+  // Browsable entities (typed tags: scheme/committee/sc_case/report)
+  static String entities(String type) => '/entities?type=$type';
+  static String entity(String slug) => '/entities/$slug';
+
   // Learn — user ↔ article interactions (Module 4)
   static const bookmarkToggle = '/bookmarks/toggle';
   static String bookmarks(String type) => '/bookmarks?type=$type';

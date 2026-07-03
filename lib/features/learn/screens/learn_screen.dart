@@ -51,6 +51,21 @@ class LearnScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
           children: [
             _QuickAccessRow(),
+            const SizedBox(height: 12),
+            InkWell(
+              onTap: () => context.push('/entities'),
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                decoration: BoxDecoration(color: const Color(0xFF0F766E).withValues(alpha: .10), borderRadius: BorderRadius.circular(14)),
+                child: Row(children: [
+                  const Icon(Icons.account_balance_outlined, color: Color(0xFF0F766E)),
+                  const SizedBox(width: 12),
+                  const Expanded(child: Text('Explore Schemes, Committees & Cases', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF0F766E), fontSize: 13.5))),
+                  const Icon(Icons.chevron_right_rounded, color: Color(0xFF0F766E)),
+                ]),
+              ),
+            ),
             const SizedBox(height: 22),
 
             // ── Featured articles ─────────────────────────────────────────────
