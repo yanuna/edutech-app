@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import '../utils/storage.dart';
 import 'api_endpoints.dart';
 
@@ -16,16 +17,20 @@ class ApiClient {
       ),
     );
 
-    _dio.interceptors.addAll([
-      _AuthInterceptor(),
-      // requestHeader:false so the `Authorization: Bearer <token>` header is
-      // never printed to the console.
-      LogInterceptor(
-        requestHeader: false,
-        responseBody: false,
-        requestBody: false,
-      ),
-    ]);
+    _dio.interceptors.add(_AuthInterceptor());
+    // Network logging is dev-only — it never runs in release builds, so no
+    // request/response metadata is written to production logs.
+    if (kDebugMode) {
+      _dio.interceptors.add(
+        // requestHeader:false so the `Authorization: Bearer <token>` header is
+        // never printed to the console.
+        LogInterceptor(
+          requestHeader: false,
+          responseBody: false,
+          requestBody: false,
+        ),
+      );
+    }
   }
 
   static final ApiClient instance = ApiClient._();
