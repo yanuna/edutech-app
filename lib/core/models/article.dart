@@ -38,7 +38,11 @@ class ArticleCard {
     summary: j['summary'] as String?,
     heroImage: j['hero_image'] as String?,
     readingTime: j['reading_time'] as int?,
-    difficulty: j['difficulty'] as String? ?? 'medium',
+    // Normalise a null OR empty value to 'medium' — call sites index
+    // difficulty[0], so an empty string would throw a RangeError.
+    difficulty: (j['difficulty'] as String?)?.isNotEmpty == true
+        ? j['difficulty'] as String
+        : 'medium',
     gsPaper: ((j['gs_paper'] as List?) ?? const []).map((e) => e.toString()).toList(),
     isFeatured: j['is_featured'] as bool? ?? false,
     // `subject`/`topic` come as {id,name} from the article endpoints but as a
