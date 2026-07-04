@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "472698647575-19b3b8n7gjqlmqlbjr0r68nl67kps787.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.edutech.edutech_app",
+            "certificate_hash": "b19e386c8585bf6d392ec813fea6c434aba5ce7d"
+          }
+        },
+        {
           "client_id": "472698647575-54v3kgvma08tk0o8lnqirtdji06mv2uf.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

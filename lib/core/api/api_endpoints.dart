@@ -3,7 +3,10 @@ import 'package:flutter/foundation.dart' show kReleaseMode;
 class ApiEndpoints {
   // Release builds hit production automatically; debug builds use the local
   // emulator host. Update the production URL to your live API domain.
-  static const String _production = 'https://visionupsc.in/api';
+  // NOTE: must be the `www` host. The apex (visionupsc.in) 301-redirects to
+  // www, and on a 301 an HTTP client downgrades POST→GET and drops the body,
+  // which silently breaks every POST (login, social-login, exam submit, …).
+  static const String _production = 'https://www.visionupsc.in/api';
 
   // Debug builds talk to a backend on the dev machine. Because a laptop's LAN IP
   // changes between networks, override it at launch without editing code:
