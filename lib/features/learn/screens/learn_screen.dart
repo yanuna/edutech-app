@@ -122,27 +122,38 @@ class _QuickAccessRow extends StatelessWidget {
       (icon: Icons.auto_stories_rounded, label: 'Books', color: const Color(0xFF059669), onTap: () => context.push('/books')),
       (icon: Icons.history_edu_rounded, label: 'PYQs', color: const Color(0xFF0EA5E9), onTap: () => context.push('/pyqs')),
     ];
+    // Even-width tiles with gaps only *between* them (no trailing padding), so
+    // the row spans the full content width and lines up with the sections below.
+    // Vertical icon-over-label layout stays balanced in these narrow columns.
     return Row(
       children: [
-        for (final it in items)
+        for (final (i, it) in items.indexed) ...[
+          if (i != 0) const SizedBox(width: 10),
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: InkWell(
-                onTap: it.onTap,
-                borderRadius: BorderRadius.circular(14),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
-                  decoration: BoxDecoration(color: it.color.withValues(alpha: .10), borderRadius: BorderRadius.circular(14)),
-                  child: Row(children: [
-                    Icon(it.icon, color: it.color),
-                    const SizedBox(width: 10),
-                    Expanded(child: Text(it.label, style: TextStyle(fontWeight: FontWeight.w700, color: it.color, fontSize: 13.5))),
-                  ]),
+            child: InkWell(
+              onTap: it.onTap,
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
+                decoration: BoxDecoration(color: it.color.withValues(alpha: .10), borderRadius: BorderRadius.circular(14)),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(it.icon, color: it.color, size: 26),
+                    const SizedBox(height: 8),
+                    Text(
+                      it.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontWeight: FontWeight.w700, color: it.color, fontSize: 12.5),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
+        ],
       ],
     );
   }
