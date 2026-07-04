@@ -1,6 +1,14 @@
 /// Models for the Test Series feature (admin-created Part/Full exams).
 library;
 
+/// Tolerant date parse: falls back to `now` for a null/missing/malformed value
+/// so a bad payload can't crash list rendering. Display-only — the exam's
+/// live/upcoming/expired state comes from the separate `status` field.
+DateTime _parseDate(dynamic value) {
+  if (value == null) return DateTime.now();
+  return DateTime.tryParse(value.toString()) ?? DateTime.now();
+}
+
 class TestSeriesAttempt {
   final String state; // not_attempted | in_progress | completed
   final int? sessionId;
@@ -65,8 +73,8 @@ class TestSeriesExam {
     type: j['type'] as String,
     totalQuestions: j['total_questions'] as int? ?? 0,
     durationMinutes: j['duration_minutes'] as int? ?? 0,
-    startAt: DateTime.parse(j['start_at'] as String),
-    endAt: DateTime.parse(j['end_at'] as String),
+    startAt: _parseDate(j['start_at']),
+    endAt: _parseDate(j['end_at']),
     status: j['status'] as String? ?? 'upcoming',
     attempt: TestSeriesAttempt.fromJson(
       (j['attempt'] as Map<String, dynamic>?) ?? const {},
@@ -149,7 +157,7 @@ class TestSeriesHistoryItem {
         examId: j['exam_id'] as int,
         examName: j['exam_name'] as String? ?? 'Exam',
         type: j['type'] as String? ?? 'full',
-        attemptDate: DateTime.parse(j['attempt_date'] as String),
+        attemptDate: _parseDate(j['attempt_date']),
         marks: (j['marks'] as num?)?.toDouble() ?? 0,
         rank: j['rank'] as int?,
         isRanked: j['is_ranked'] as bool? ?? false,

@@ -152,6 +152,51 @@ class _AppShell extends ConsumerWidget {
 
 // ─── Router ────────────────────────────────────────────────────────────────
 
+/// Reads a required int route param (path by default, or query when [query] is
+/// true). Returns null for a missing/malformed value — e.g. a hand-typed or
+/// corrupted deep link like `/exam/abc/result` — so the builder can show a
+/// friendly error instead of crashing on int.parse.
+int? _intParam(GoRouterState s, String name, {bool query = false}) {
+  final raw = query ? s.uri.queryParameters[name] : s.pathParameters[name];
+  return raw == null ? null : int.tryParse(raw);
+}
+
+/// Shown when a route's numeric id can't be parsed (a bad/typo'd deep link).
+class _InvalidRouteScreen extends StatelessWidget {
+  const _InvalidRouteScreen();
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(),
+    body: Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.link_off, size: 48, color: Color(0xFFEF4444)),
+            const SizedBox(height: 12),
+            const Text(
+              'This link is invalid.',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 18),
+            FilledButton.icon(
+              onPressed: () => context.go('/home'),
+              icon: const Icon(Icons.home_outlined),
+              label: const Text('Go Home'),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
   // Re-run redirects when auth changes via a refreshListenable instead of
   // rebuilding the whole router. Recreating the GoRouter (with the same
@@ -241,25 +286,42 @@ final routerProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: ':subjectId/chapters',
-                    builder: (_, s) => ChaptersScreen(
-                      subjectId: int.parse(s.pathParameters['subjectId']!),
-                      subjectName: s.uri.queryParameters['name'] ?? '',
-                    ),
+                    builder: (_, s) {
+                      final subjectId = _intParam(s, 'subjectId');
+                      if (subjectId == null) return const _InvalidRouteScreen();
+                      return ChaptersScreen(
+                        subjectId: subjectId,
+                        subjectName: s.uri.queryParameters['name'] ?? '',
+                      );
+                    },
                     routes: [
                       GoRoute(
                         path: ':chapterId/topics',
-                        builder: (_, s) => TopicsScreen(
-                          subjectId: int.parse(s.pathParameters['subjectId']!),
-                          chapterId: int.parse(s.pathParameters['chapterId']!),
-                          chapterName: s.uri.queryParameters['name'] ?? '',
-                        ),
+                        builder: (_, s) {
+                          final subjectId = _intParam(s, 'subjectId');
+                          final chapterId = _intParam(s, 'chapterId');
+                          if (subjectId == null || chapterId == null) {
+                            return const _InvalidRouteScreen();
+                          }
+                          return TopicsScreen(
+                            subjectId: subjectId,
+                            chapterId: chapterId,
+                            chapterName: s.uri.queryParameters['name'] ?? '',
+                          );
+                        },
                         routes: [
                           GoRoute(
                             path: ':topicId/content',
-                            builder: (_, s) => TopicContentScreen(
-                              topicId: int.parse(s.pathParameters['topicId']!),
-                              topicName: s.uri.queryParameters['name'] ?? '',
-                            ),
+                            builder: (_, s) {
+                              final topicId = _intParam(s, 'topicId');
+                              if (topicId == null) {
+                                return const _InvalidRouteScreen();
+                              }
+                              return TopicContentScreen(
+                                topicId: topicId,
+                                topicName: s.uri.queryParameters['name'] ?? '',
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -283,15 +345,19 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ),
                   GoRoute(
                     path: ':sessionId/take',
-                    builder: (_, s) => ExamScreen(
-                      sessionId: int.parse(s.pathParameters['sessionId']!),
-                    ),
+                    builder: (_, s) {
+                      final sessionId = _intParam(s, 'sessionId');
+                      if (sessionId == null) return const _InvalidRouteScreen();
+                      return ExamScreen(sessionId: sessionId);
+                    },
                   ),
                   GoRoute(
                     path: ':sessionId/result',
-                    builder: (_, s) => ExamResultScreen(
-                      sessionId: int.parse(s.pathParameters['sessionId']!),
-                    ),
+                    builder: (_, s) {
+                      final sessionId = _intParam(s, 'sessionId');
+                      if (sessionId == null) return const _InvalidRouteScreen();
+                      return ExamResultScreen(sessionId: sessionId);
+                    },
                   ),
                   // ── Test Series ────────────────────────────────────────────
                   GoRoute(
@@ -304,9 +370,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ),
                   GoRoute(
                     path: 'test-series/:examId/leaderboard',
-                    builder: (_, s) => ExamLeaderboardScreen(
-                      examId: int.parse(s.pathParameters['examId']!),
-                    ),
+                    builder: (_, s) {
+                      final examId = _intParam(s, 'examId');
+                      if (examId == null) return const _InvalidRouteScreen();
+                      return ExamLeaderboardScreen(examId: examId);
+                    },
                   ),
                 ],
               ),
@@ -332,10 +400,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ),
                   GoRoute(
                     path: 'checkout',
-                    builder: (_, s) => CheckoutScreen(
-                      planId: int.parse(s.uri.queryParameters['plan_id']!),
-                      gateway: s.uri.queryParameters['gateway'] ?? 'razorpay',
-                    ),
+                    builder: (_, s) {
+                      final planId = _intParam(s, 'plan_id', query: true);
+                      if (planId == null) return const _InvalidRouteScreen();
+                      return CheckoutScreen(
+                        planId: planId,
+                        gateway: s.uri.queryParameters['gateway'] ?? 'razorpay',
+                      );
+                    },
                   ),
                   GoRoute(
                     path: 'payment-success',
@@ -387,10 +459,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Learn — Articles (full-screen over the shell, like PYQs).
       GoRoute(
         path: '/learn/subject/:id',
-        builder: (_, s) => ArticlesListScreen(
-          subjectId: int.parse(s.pathParameters['id']!),
-          subjectName: s.uri.queryParameters['name'] ?? '',
-        ),
+        builder: (_, s) {
+          final subjectId = _intParam(s, 'id');
+          if (subjectId == null) return const _InvalidRouteScreen();
+          return ArticlesListScreen(
+            subjectId: subjectId,
+            subjectName: s.uri.queryParameters['name'] ?? '',
+          );
+        },
       ),
       GoRoute(
         path: '/learn/article/:slug',
@@ -419,13 +495,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       // them AES-encrypted for offline (see PyqService / SecureFileStore).
       GoRoute(
         path: '/pyqs/view/:paperId/:slot',
-        builder: (_, s) => SecurePdfViewer.loader(
-          () => PyqService.loadPdf(
-            int.parse(s.pathParameters['paperId']!),
-            s.pathParameters['slot']!,
-          ),
-          title: s.uri.queryParameters['title'] ?? 'Document',
-        ),
+        builder: (_, s) {
+          final paperId = _intParam(s, 'paperId');
+          if (paperId == null) return const _InvalidRouteScreen();
+          return SecurePdfViewer.loader(
+            () => PyqService.loadPdf(paperId, s.pathParameters['slot']!),
+            title: s.uri.queryParameters['title'] ?? 'Document',
+          );
+        },
       ),
     ],
   );
