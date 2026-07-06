@@ -120,6 +120,9 @@ class ApiEndpoints {
   static const notifications = '/notifications';
   static const notificationsRead = '/notifications/read';
 
+  // Help & Support FAQs
+  static const faqs = '/faqs';
+
   // Ads
   static const adsConfig = '/ads-config';
 

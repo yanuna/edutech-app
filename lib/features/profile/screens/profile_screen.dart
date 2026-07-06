@@ -209,12 +209,12 @@ class ProfileScreen extends ConsumerWidget {
                       _Tile(
                         icon: Icons.help_outline,
                         label: 'Help & Support',
-                        onTap: () {},
+                        onTap: () => context.push('/help'),
                       ),
                       _Tile(
                         icon: Icons.info_outline,
                         label: 'About',
-                        onTap: () {},
+                        onTap: () => context.push('/about'),
                       ),
                     ],
                   ),

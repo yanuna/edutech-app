@@ -55,6 +55,8 @@ import 'features/current_affairs/screens/current_affairs_screen.dart';
 import 'features/notes/screens/notes_screen.dart';
 import 'features/notes/screens/editorials_screen.dart';
 import 'features/notifications/screens/notifications_screen.dart';
+import 'features/support/screens/help_screen.dart';
+import 'features/support/screens/about_screen.dart';
 import 'features/entities/screens/entities_screen.dart';
 import 'features/books/screens/books_screen.dart';
 import 'features/govt_jobs/screens/govt_jobs_screen.dart';
@@ -411,6 +413,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/learn/saved', builder: (_, _) => const SavedArticlesScreen()),
       GoRoute(path: '/search', builder: (_, _) => const SearchScreen()),
       GoRoute(path: '/notifications', builder: (_, _) => const NotificationsScreen()),
+      GoRoute(path: '/help', builder: (_, _) => const HelpScreen()),
+      GoRoute(path: '/about', builder: (_, _) => const AboutScreen()),
       GoRoute(path: '/notes', builder: (_, _) => const NotesScreen()),
       GoRoute(path: '/editorials', builder: (_, _) => const EditorialsScreen()),
       GoRoute(path: '/entities', builder: (_, _) => const EntitiesScreen()),

@@ -10,6 +10,7 @@ class BrandingConfig {
   final String supportWhatsapp;
   final String privacyUrl;
   final String termsUrl;
+  final String aboutText;
 
   const BrandingConfig({
     required this.appName,
@@ -20,6 +21,7 @@ class BrandingConfig {
     required this.supportWhatsapp,
     required this.privacyUrl,
     required this.termsUrl,
+    this.aboutText = '',
   });
 
   static const BrandingConfig defaults = BrandingConfig(
@@ -31,6 +33,7 @@ class BrandingConfig {
     supportWhatsapp: '',
     privacyUrl: '',
     termsUrl: '',
+    aboutText: '',
   );
 
   factory BrandingConfig.fromJson(Map<String, dynamic> json) {
@@ -59,6 +62,7 @@ class BrandingConfig {
       supportWhatsapp: json['support_whatsapp'] as String? ?? '',
       privacyUrl: json['privacy_url'] as String? ?? '',
       termsUrl: json['terms_url'] as String? ?? '',
+      aboutText: json['about_text'] as String? ?? '',
     );
   }
 
