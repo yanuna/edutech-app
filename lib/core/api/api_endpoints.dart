@@ -116,6 +116,10 @@ class ApiEndpoints {
   static String govtJobBookmark(String slug) => '/govt-jobs/$slug/bookmark';
   static const govtJobBookmarks = '/my/job-bookmarks';
 
+  // Notification inbox (admin broadcasts)
+  static const notifications = '/notifications';
+  static const notificationsRead = '/notifications/read';
+
   // Ads
   static const adsConfig = '/ads-config';
 

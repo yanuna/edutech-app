@@ -204,7 +204,7 @@ class ProfileScreen extends ConsumerWidget {
                       _Tile(
                         icon: Icons.notifications_outlined,
                         label: 'Notifications',
-                        onTap: () {},
+                        onTap: () => context.push('/notifications'),
                       ),
                       _Tile(
                         icon: Icons.help_outline,
