@@ -54,6 +54,9 @@ import 'features/news/screens/current_news_screen.dart';
 import 'features/current_affairs/screens/current_affairs_screen.dart';
 import 'features/notes/screens/notes_screen.dart';
 import 'features/notes/screens/editorials_screen.dart';
+import 'features/notifications/screens/notifications_screen.dart';
+import 'features/support/screens/help_screen.dart';
+import 'features/support/screens/about_screen.dart';
 import 'features/entities/screens/entities_screen.dart';
 import 'features/books/screens/books_screen.dart';
 import 'features/govt_jobs/screens/govt_jobs_screen.dart';
@@ -326,12 +329,20 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'referral',
                     builder: (_, _) => const ReferralScreen(),
                   ),
+                  // Subscription flow + leaderboard are opened from paywalls
+                  // and other tabs (Home, Test Series, Practice, etc.). They
+                  // must render on the root navigator (parentNavigatorKey), not
+                  // the Profile branch's navigator — otherwise a push from
+                  // another branch lands on an inactive tab's stack and nothing
+                  // appears on screen.
                   GoRoute(
                     path: 'plans',
+                    parentNavigatorKey: _shellKey,
                     builder: (_, _) => const PlansScreen(),
                   ),
                   GoRoute(
                     path: 'checkout',
+                    parentNavigatorKey: _shellKey,
                     builder: (_, s) => CheckoutScreen(
                       planId: int.parse(s.uri.queryParameters['plan_id']!),
                       gateway: s.uri.queryParameters['gateway'] ?? 'razorpay',
@@ -339,14 +350,17 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ),
                   GoRoute(
                     path: 'payment-success',
+                    parentNavigatorKey: _shellKey,
                     builder: (_, _) => const PaymentSuccessScreen(),
                   ),
                   GoRoute(
                     path: 'leaderboard',
+                    parentNavigatorKey: _shellKey,
                     builder: (_, _) => const LeaderboardScreen(),
                   ),
                   GoRoute(
                     path: 'payment-webview',
+                    parentNavigatorKey: _shellKey,
                     builder: (_, s) => PaymentWebViewScreen(
                       orderId: s.uri.queryParameters['order_id'] ?? '',
                       payPageUrl: s.uri.queryParameters['pay_page_url'] ?? '',
@@ -398,6 +412,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/learn/saved', builder: (_, _) => const SavedArticlesScreen()),
       GoRoute(path: '/search', builder: (_, _) => const SearchScreen()),
+      GoRoute(path: '/notifications', builder: (_, _) => const NotificationsScreen()),
+      GoRoute(path: '/help', builder: (_, _) => const HelpScreen()),
+      GoRoute(path: '/about', builder: (_, _) => const AboutScreen()),
       GoRoute(path: '/notes', builder: (_, _) => const NotesScreen()),
       GoRoute(path: '/editorials', builder: (_, _) => const EditorialsScreen()),
       GoRoute(path: '/entities', builder: (_, _) => const EntitiesScreen()),
@@ -468,6 +485,22 @@ class _EduTechAppState extends ConsumerState<EduTechApp> {
   void _routeFromMessage(RemoteMessage? message) {
     if (message == null) return;
     final router = ref.read(routerProvider);
+
+    // Admin broadcasts (from the notification composer) carry type=broadcast +
+    // an action. Deep-link where we can, otherwise open the inbox.
+    if (message.data['type'] == 'broadcast') {
+      final action = message.data['action_type'] as String?;
+      final value = message.data['action_value'] as String?;
+      if (action == 'article' && value != null && value.isNotEmpty) {
+        router.go('/learn/article/$value');
+      } else if (action == 'screen' && value != null && value.startsWith('/')) {
+        router.go(value);
+      } else {
+        router.go('/notifications');
+      }
+      return;
+    }
+
     final screen = message.data['screen'] as String?;
     switch (screen) {
       case 'subscription':

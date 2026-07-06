@@ -7,6 +7,7 @@ import '../../core/providers/article_provider.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/exam_provider.dart';
 import '../../core/providers/gamification_provider.dart';
+import '../../core/providers/notifications_provider.dart';
 import '../../core/providers/subscription_provider.dart';
 import '../../core/services/startup_service.dart';
 import '../../shared/widgets/app_widgets.dart';
@@ -18,15 +19,14 @@ import '../../shared/widgets/ad_banner_widget.dart';
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
-  // TODO: make configurable via admin settings. Next UPSC CSE Prelims.
-  static final DateTime _prelimsDate = DateTime(2027, 5, 23);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).user;
     final subs = ref.watch(subscriptionStatusProvider);
     final mods = ref.watch(enabledModulesProvider);
     final activeExam = ref.watch(activeExamProvider);
+    final unread = ref.watch(unreadNotificationCountProvider);
+    final countdown = ref.watch(examCountdownProvider);
 
     return Scaffold(
       body: RefreshIndicator(
@@ -34,10 +34,11 @@ class HomeScreen extends ConsumerWidget {
           ref.invalidate(continueReadingProvider);
           ref.invalidate(gamificationProfileProvider);
           ref.invalidate(articleListProvider(const ArticleQuery(featured: true)));
+          ref.invalidate(notificationInboxProvider);
         },
         child: CustomScrollView(
           slivers: [
-            _header(context, user?.name.split(' ').first ?? 'there'),
+            _header(context, user?.name.split(' ').first ?? 'there', unread),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
@@ -52,8 +53,10 @@ class HomeScreen extends ConsumerWidget {
                       orElse: () => const SizedBox.shrink(),
                     ),
 
-                    _CountdownCard(examDate: _prelimsDate),
-                    const SizedBox(height: 20),
+                    if (countdown.enabled && countdown.date != null) ...[
+                      _CountdownCard(label: countdown.label, examDate: countdown.date!),
+                      const SizedBox(height: 20),
+                    ],
 
                     _StreakRow(),
                     const SizedBox(height: 4),
@@ -88,13 +91,16 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _header(BuildContext context, String firstName) {
+  Widget _header(BuildContext context, String firstName, int unread) {
     return SliverAppBar(
       expandedHeight: 172,
       pinned: true,
       backgroundColor: const Color(0xFF4F46E5),
       actions: [
-        IconButton(icon: const Icon(Icons.notifications_outlined, color: Colors.white), onPressed: () {}),
+        Padding(
+          padding: const EdgeInsets.only(right: 4),
+          child: _NotificationBell(unread: unread, onTap: () => context.push('/notifications')),
+        ),
       ],
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
@@ -133,8 +139,9 @@ class HomeScreen extends ConsumerWidget {
 
 // ── Exam countdown ──────────────────────────────────────────────────────────
 class _CountdownCard extends StatelessWidget {
+  final String label;
   final DateTime examDate;
-  const _CountdownCard({required this.examDate});
+  const _CountdownCard({required this.label, required this.examDate});
 
   @override
   Widget build(BuildContext context) {
@@ -151,9 +158,9 @@ class _CountdownCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('UPSC Prelims 2027', style: TextStyle(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.w600)),
+              Text(label.isEmpty ? 'Exam' : label, style: const TextStyle(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
-              Text('$days days to go', style: const TextStyle(fontFamily: 'Poppins', color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+              Text(days == 0 ? 'Today!' : '$days days to go', style: const TextStyle(fontFamily: 'Poppins', color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
             ],
           ),
           const Spacer(),
@@ -393,6 +400,38 @@ class _SectionTitle extends StatelessWidget {
   const _SectionTitle(this.text);
   @override
   Widget build(BuildContext context) => Text(text, style: const TextStyle(fontFamily: 'Poppins', fontSize: 18, fontWeight: FontWeight.w700));
+}
+
+// ── Notification bell with unread badge ─────────────────────────────────────
+class _NotificationBell extends StatelessWidget {
+  final int unread;
+  final VoidCallback onTap;
+  const _NotificationBell({required this.unread, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        IconButton(icon: const Icon(Icons.notifications_outlined, color: Colors.white), onPressed: onTap),
+        if (unread > 0)
+          Positioned(
+            top: 8,
+            right: 6,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+              constraints: const BoxConstraints(minWidth: 16),
+              decoration: BoxDecoration(color: const Color(0xFFEF4444), borderRadius: BorderRadius.circular(9), border: Border.all(color: const Color(0xFF4F46E5), width: 1.5)),
+              child: Text(
+                unread > 9 ? '9+' : '$unread',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.w800, height: 1.3),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 // ── Preserved widgets ───────────────────────────────────────────────────────
