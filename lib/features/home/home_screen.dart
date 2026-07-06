@@ -19,9 +19,6 @@ import '../../shared/widgets/ad_banner_widget.dart';
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
-  // TODO: make configurable via admin settings. Next UPSC CSE Prelims.
-  static final DateTime _prelimsDate = DateTime(2027, 5, 23);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).user;
@@ -29,6 +26,7 @@ class HomeScreen extends ConsumerWidget {
     final mods = ref.watch(enabledModulesProvider);
     final activeExam = ref.watch(activeExamProvider);
     final unread = ref.watch(unreadNotificationCountProvider);
+    final countdown = ref.watch(examCountdownProvider);
 
     return Scaffold(
       body: RefreshIndicator(
@@ -55,8 +53,10 @@ class HomeScreen extends ConsumerWidget {
                       orElse: () => const SizedBox.shrink(),
                     ),
 
-                    _CountdownCard(examDate: _prelimsDate),
-                    const SizedBox(height: 20),
+                    if (countdown.enabled && countdown.date != null) ...[
+                      _CountdownCard(label: countdown.label, examDate: countdown.date!),
+                      const SizedBox(height: 20),
+                    ],
 
                     _StreakRow(),
                     const SizedBox(height: 4),
@@ -139,8 +139,9 @@ class HomeScreen extends ConsumerWidget {
 
 // ── Exam countdown ──────────────────────────────────────────────────────────
 class _CountdownCard extends StatelessWidget {
+  final String label;
   final DateTime examDate;
-  const _CountdownCard({required this.examDate});
+  const _CountdownCard({required this.label, required this.examDate});
 
   @override
   Widget build(BuildContext context) {
@@ -157,9 +158,9 @@ class _CountdownCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('UPSC Prelims 2027', style: TextStyle(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.w600)),
+              Text(label.isEmpty ? 'Exam' : label, style: const TextStyle(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
-              Text('$days days to go', style: const TextStyle(fontFamily: 'Poppins', color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+              Text(days == 0 ? 'Today!' : '$days days to go', style: const TextStyle(fontFamily: 'Poppins', color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
             ],
           ),
           const Spacer(),

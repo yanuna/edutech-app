@@ -11,6 +11,27 @@ final paymentConfigProvider = StateProvider<Map<String, String>>(
   (ref) => const {},
 );
 
+/// Admin-configurable exam countdown shown on the home screen. Defaults match
+/// the backend defaults so the card renders before the first /startup returns.
+class ExamCountdown {
+  final bool enabled;
+  final String label;
+  final DateTime? date;
+  const ExamCountdown({this.enabled = false, this.label = '', this.date});
+
+  static final fallback = ExamCountdown(enabled: true, label: 'UPSC Prelims 2027', date: DateTime(2027, 5, 23));
+
+  factory ExamCountdown.fromJson(Map<String, dynamic> json) {
+    return ExamCountdown(
+      enabled: json['enabled'] == true,
+      label: json['label']?.toString() ?? '',
+      date: DateTime.tryParse(json['date']?.toString() ?? ''),
+    );
+  }
+}
+
+final examCountdownProvider = StateProvider<ExamCountdown>((ref) => ExamCountdown.fallback);
+
 /// Which social-login buttons to show, controlled from the admin panel.
 class SocialLoginConfig {
   final bool googleEnabled;
@@ -88,6 +109,13 @@ class StartupService {
       final adsJson = data['ads'] as Map<String, dynamic>?;
       if (adsJson != null) {
         AdService.instance.applyConfig(AdConfig.fromJson(adsJson));
+      }
+
+      // Home screen exam countdown (admin-configurable)
+      final homeJson = data['home'] as Map<String, dynamic>?;
+      final countdownJson = homeJson?['exam_countdown'] as Map<String, dynamic>?;
+      if (countdownJson != null) {
+        _ref.read(examCountdownProvider.notifier).state = ExamCountdown.fromJson(countdownJson);
       }
 
       // Store payment config (razorpay publishable key, active gateway)
