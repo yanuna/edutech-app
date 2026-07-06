@@ -216,6 +216,11 @@ class ProfileScreen extends ConsumerWidget {
                         label: 'About',
                         onTap: () => context.push('/about'),
                       ),
+                      _Tile(
+                        icon: Icons.gavel_outlined,
+                        label: 'Legal & Policies',
+                        onTap: () => context.push('/legal'),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
