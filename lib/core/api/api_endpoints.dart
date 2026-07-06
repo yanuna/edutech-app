@@ -123,6 +123,10 @@ class ApiEndpoints {
   // Help & Support FAQs
   static const faqs = '/faqs';
 
+  // Legal & compliance pages (admin-managed)
+  static const legal = '/legal';
+  static String legalPage(String slug) => '/legal/$slug';
+
   // Ads
   static const adsConfig = '/ads-config';
 
