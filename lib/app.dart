@@ -57,6 +57,8 @@ import 'features/notes/screens/editorials_screen.dart';
 import 'features/notifications/screens/notifications_screen.dart';
 import 'features/support/screens/help_screen.dart';
 import 'features/support/screens/about_screen.dart';
+import 'features/legal/screens/legal_menu_screen.dart';
+import 'features/legal/screens/legal_document_screen.dart';
 import 'features/entities/screens/entities_screen.dart';
 import 'features/books/screens/books_screen.dart';
 import 'features/govt_jobs/screens/govt_jobs_screen.dart';
@@ -181,7 +183,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             loc.startsWith('/register') ||
             loc.startsWith('/forgot-password') ||
             loc.startsWith('/news') ||
-            loc.startsWith('/current-affairs')) {
+            loc.startsWith('/current-affairs') ||
+            loc.startsWith('/legal')) {
           return null;
         }
         return '/login';
@@ -415,6 +418,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/notifications', builder: (_, _) => const NotificationsScreen()),
       GoRoute(path: '/help', builder: (_, _) => const HelpScreen()),
       GoRoute(path: '/about', builder: (_, _) => const AboutScreen()),
+      GoRoute(path: '/legal', builder: (_, _) => const LegalMenuScreen()),
+      GoRoute(path: '/legal/:slug', builder: (_, s) => LegalDocumentScreen(slug: s.pathParameters['slug']!)),
       GoRoute(path: '/notes', builder: (_, _) => const NotesScreen()),
       GoRoute(path: '/editorials', builder: (_, _) => const EditorialsScreen()),
       GoRoute(path: '/entities', builder: (_, _) => const EntitiesScreen()),
