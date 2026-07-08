@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 import '../../../core/providers/legal_provider.dart';
+import '../../../shared/widgets/styled_html_view.dart';
 
 /// Renders a single admin-managed legal page (fetched by slug) as HTML in a
 /// scrollable, well-typeset page.
@@ -41,9 +41,9 @@ class LegalDocumentScreen extends ConsumerWidget {
                   style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
             ],
             const SizedBox(height: 18),
-            HtmlWidget(
+            StyledHtmlView(
               doc.bodyHtml,
-              textStyle: const TextStyle(fontSize: 14, height: 1.55),
+              fontSize: 15,
             ),
           ],
         ),

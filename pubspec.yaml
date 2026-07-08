@@ -37,6 +37,9 @@ dependencies:
 
   # HTML rendering
   flutter_widget_from_html: ^0.15.2
+  # DOM parsing for StyledHtmlView's custom element styling (already resolved
+  # transitively via flutter_widget_from_html; declared directly since we import it)
+  html: ^0.15.4
 
   # Loading shimmer
   shimmer: ^3.0.0
