@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:go_router/go_router.dart';
+import '../../../shared/widgets/styled_html_view.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../../core/providers/catalog_provider.dart';
 import '../../../core/providers/subscription_provider.dart';
@@ -89,7 +90,7 @@ class _TopicContentScreenState extends ConsumerState<TopicContentScreen> {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: HtmlWidget(
+                    child: StyledHtmlView(
                       items.first.htmlContent ?? '',
                       renderMode: RenderMode.listView,
                     ),
@@ -228,7 +229,7 @@ class _HtmlBlock extends StatelessWidget {
             ),
             const Divider(),
           ],
-          HtmlWidget(html),
+          StyledHtmlView(html),
         ],
       ),
     ),
