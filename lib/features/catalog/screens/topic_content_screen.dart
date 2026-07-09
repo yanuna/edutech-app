@@ -1,14 +1,32 @@
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:go_router/go_router.dart';
 import '../../../shared/widgets/styled_html_view.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import '../../../core/api/api_client.dart';
+import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/catalog_provider.dart';
 import '../../../core/providers/subscription_provider.dart';
 import '../../../core/models/catalog.dart';
 import '../../../shared/widgets/app_widgets.dart';
 import '../../../shared/widgets/ad_banner_widget.dart';
+import '../../../shared/widgets/secure_pdf_viewer.dart';
+import '../../../shared/widgets/secure_epub_viewer.dart';
+
+/// Streams a private document from its short-lived signed URL into memory. The
+/// URL already carries its own signature auth, so no bearer token is needed;
+/// plaintext bytes live only in RAM and are handed straight to the secure viewer.
+Future<Uint8List> _fetchSignedBytes(String url) async {
+  final res = await ApiClient.instance.dio.get<List<int>>(
+    url,
+    options: Options(responseType: ResponseType.bytes),
+  );
+  return Uint8List.fromList(res.data ?? const []);
+}
 
 class TopicContentScreen extends ConsumerStatefulWidget {
   final int topicId;
@@ -75,6 +93,34 @@ class _TopicContentScreenState extends ConsumerState<TopicContentScreen> {
             );
           }
 
+          // A single uploaded document (PDF/EPUB) fills the screen with the
+          // inline secure viewer — view-only, searchable, no download/share.
+          // This replaces the old "downloadable attachment" behaviour.
+          if (items.length == 1 &&
+              (items.first.contentType == 'pdf' ||
+                  items.first.contentType == 'epub')) {
+            final item = items.first;
+            final url = item.fileUrl;
+            if (url == null) {
+              return const Center(child: Text('Document unavailable.'));
+            }
+            final watermark = ref.watch(authProvider).user?.email;
+            final title = item.title ?? widget.topicName;
+            return item.contentType == 'epub'
+                ? SecureEpubViewer(
+                    url: url,
+                    title: title,
+                    watermark: watermark,
+                    embedded: true,
+                  )
+                : SecurePdfViewer.loader(
+                    () => _fetchSignedBytes(url),
+                    title: title,
+                    watermark: watermark,
+                    embedded: true,
+                  );
+          }
+
           // A single HTML document (the common case) is rendered as a lazy
           // ListView so large topics — some are 100KB+ — lay out their content
           // on demand and scroll smoothly, instead of building the whole tree
@@ -100,7 +146,8 @@ class _TopicContentScreenState extends ConsumerState<TopicContentScreen> {
             );
           }
 
-          // Mixed / multiple content (videos, PDFs, several blocks).
+          // Mixed / multiple content (videos, documents, several blocks).
+          final watermark = ref.watch(authProvider).user?.email;
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: items.length + 1,
@@ -111,7 +158,10 @@ class _TopicContentScreenState extends ConsumerState<TopicContentScreen> {
                   child: AdBannerWidget(),
                 );
               }
-              return _ContentBlock(content: items[i - 1]);
+              return _ContentBlock(
+                content: items[i - 1],
+                watermark: watermark,
+              );
             },
           );
         },
@@ -127,7 +177,8 @@ class _TopicContentScreenState extends ConsumerState<TopicContentScreen> {
 
 class _ContentBlock extends StatefulWidget {
   final TopicContent content;
-  const _ContentBlock({required this.content});
+  final String? watermark;
+  const _ContentBlock({required this.content, this.watermark});
 
   @override
   State<_ContentBlock> createState() => _ContentBlockState();
@@ -167,7 +218,10 @@ class _ContentBlockState extends State<_ContentBlock> {
           title: c.title,
         ),
         'html' => _HtmlBlock(html: c.htmlContent ?? '', title: c.title),
-        'pdf' => _PdfBlock(url: c.fileUrl ?? '', title: c.title),
+        'pdf' || 'epub' => _DocumentBlock(
+          content: c,
+          watermark: widget.watermark,
+        ),
         _ => const SizedBox.shrink(),
       },
     );
@@ -236,34 +290,54 @@ class _HtmlBlock extends StatelessWidget {
   );
 }
 
-class _PdfBlock extends StatelessWidget {
-  final String url;
-  final String? title;
-  const _PdfBlock({required this.url, this.title});
+/// Renders an uploaded PDF/EPUB inline with the secure, view-only viewer instead
+/// of a downloadable attachment. Fixed height so it embeds cleanly inside the
+/// scrolling content list; the viewer manages its own paging within that box.
+class _DocumentBlock extends StatelessWidget {
+  final TopicContent content;
+  final String? watermark;
+  const _DocumentBlock({required this.content, this.watermark});
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: ListTile(
-      leading: const Icon(
-        Icons.picture_as_pdf,
-        color: Colors.redAccent,
-        size: 36,
-      ),
-      title: Text(
-        title ?? 'PDF Document',
-        style: const TextStyle(
-          fontFamily: 'Poppins',
-          fontWeight: FontWeight.w500,
+  Widget build(BuildContext context) {
+    final url = content.fileUrl;
+    if (url == null || url.isEmpty) return const SizedBox.shrink();
+
+    final isEpub = content.contentType == 'epub';
+    final title = content.title ?? (isEpub ? 'E-Book' : 'PDF Document');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
         ),
-      ),
-      subtitle: const Text(
-        'Tap to open',
-        style: TextStyle(fontFamily: 'Poppins', fontSize: 12),
-      ),
-      trailing: const Icon(Icons.open_in_new),
-      onTap: () {
-        // URL launch handled externally
-      },
-    ),
-  );
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: SizedBox(
+            height: 520,
+            child: isEpub
+                ? SecureEpubViewer(
+                    url: url,
+                    title: title,
+                    watermark: watermark,
+                    embedded: true,
+                  )
+                : SecurePdfViewer.loader(
+                    () => _fetchSignedBytes(url),
+                    title: title,
+                    watermark: watermark,
+                    embedded: true,
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
 }
