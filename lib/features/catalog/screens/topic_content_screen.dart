@@ -23,7 +23,12 @@ import '../../../shared/widgets/secure_epub_viewer.dart';
 Future<Uint8List> _fetchSignedBytes(String url) async {
   final res = await ApiClient.instance.dio.get<List<int>>(
     url,
-    options: Options(responseType: ResponseType.bytes),
+    options: Options(
+      responseType: ResponseType.bytes,
+      // Required by the backend guard on /api/secure-file — direct (header-less)
+      // access is refused so a leaked URL can't be opened in a browser.
+      headers: const {'X-Requested-With': 'XMLHttpRequest'},
+    ),
   );
   return Uint8List.fromList(res.data ?? const []);
 }

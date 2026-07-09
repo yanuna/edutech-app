@@ -118,7 +118,12 @@ class _SecureEpubViewerState extends State<SecureEpubViewer> {
             children: [
               EpubViewer(
                 epubController: _controller,
-                epubSource: EpubSource.fromUrl(widget.url),
+                // UrlEpubLoader downloads Dart-side via http.get with these
+                // headers; the backend guard on /api/secure-file requires it.
+                epubSource: EpubSource.fromUrl(
+                  widget.url,
+                  headers: const {'X-Requested-With': 'XMLHttpRequest'},
+                ),
                 displaySettings: EpubDisplaySettings(
                   flow: EpubFlow.paginated,
                   snap: true,
