@@ -76,6 +76,41 @@ class Topic {
   );
 }
 
+/// A topic's content plus whether that topic is behind the paywall.
+///
+/// The screen used to gate purely on "does this user have an active
+/// subscription?", so EVERY free topic showed the Premium paywall to every
+/// non-subscriber — even though the server had just returned the content. The
+/// server's `topic.is_paid` (which inherits from the chapter and subject) is the
+/// only correct input, so it travels with the contents.
+class TopicContentBundle {
+  final List<TopicContent> contents;
+  final bool isPaid;
+  final String language;
+  final List<String> availableLanguages;
+
+  const TopicContentBundle({
+    required this.contents,
+    required this.isPaid,
+    this.language = 'en',
+    this.availableLanguages = const [],
+  });
+
+  factory TopicContentBundle.fromJson(Map<String, dynamic> j) =>
+      TopicContentBundle(
+        contents: ((j['contents'] as List?) ?? const [])
+            .map((e) => TopicContent.fromJson(
+                  Map<String, dynamic>.from(e as Map),
+                ))
+            .toList(),
+        isPaid: (j['topic'] as Map?)?['is_paid'] as bool? ?? false,
+        language: (j['language'] ?? 'en').toString(),
+        availableLanguages: ((j['available_languages'] as List?) ?? const [])
+            .map((e) => e.toString())
+            .toList(),
+      );
+}
+
 class TopicContent {
   final int id;
   final String contentType;
@@ -100,8 +135,8 @@ class TopicContent {
   String? get fileUrl => fileUrls.isNotEmpty ? fileUrls.first : null;
 
   factory TopicContent.fromJson(Map<String, dynamic> j) => TopicContent(
-    id: j['id'] as int,
-    contentType: j['content_type'] as String,
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    contentType: (j['content_type'] ?? 'html').toString(),
     title: j['title'] as String?,
     youtubeVideoId: j['youtube_video_id'] as String?,
     htmlContent: j['html_content'] as String?,

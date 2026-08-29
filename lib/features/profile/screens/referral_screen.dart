@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../core/providers/auth_provider.dart';
 
 class ReferralScreen extends ConsumerWidget {
@@ -99,12 +100,32 @@ class ReferralScreen extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
-                      onPressed: () {
-                        Share(
-                          context: context,
-                          text:
-                              'Join EduTech and use my referral code $code to get started! Download now.',
-                        );
+                      // This used to call a LOCAL class named `Share`, defined
+                      // at the bottom of this file, which only copied to the
+                      // clipboard — so the referral loop's main growth action
+                      // never opened the OS share sheet at all. share_plus is
+                      // already a dependency and is used correctly elsewhere.
+                      onPressed: () async {
+                        try {
+                          await SharePlus.instance.share(
+                            ShareParams(
+                              text:
+                                  'Join EduTech and use my referral code $code '
+                                  'to get started! Download now.',
+                              subject: 'Join me on EduTech',
+                            ),
+                          );
+                        } catch (_) {
+                          await Clipboard.setData(
+                            ClipboardData(text: 'Referral code: $code'),
+                          );
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Referral code copied.'),
+                            ),
+                          );
+                        }
                       },
                       icon: const Icon(Icons.share, color: Color(0xFF4F46E5)),
                       label: const Text(
@@ -126,16 +147,6 @@ class ReferralScreen extends ConsumerWidget {
         ),
       ),
     );
-  }
-}
-
-// Simple share placeholder — real Share uses share_plus package
-class Share {
-  Share({required BuildContext context, required String text}) {
-    Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Link copied to clipboard!')));
   }
 }
 

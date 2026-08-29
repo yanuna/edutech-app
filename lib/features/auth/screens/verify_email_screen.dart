@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/api/api_client.dart';
 import '../../../core/providers/auth_provider.dart';
 
 class VerifyEmailScreen extends ConsumerStatefulWidget {
@@ -38,13 +39,24 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
 
   Future<void> _resend() async {
     setState(() => _resending = true);
-    await ref.read(authProvider.notifier).resendVerificationEmail();
-    if (mounted) {
-      setState(() => _resending = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Verification email resent!')),
-      );
+
+    // resendVerificationEmail() has no try/catch and rethrows. The route is
+    // throttle:6,1, so one 429 (or a dropped connection) propagated out of here
+    // and _resending was never reset — the button became a permanent spinner
+    // and only an app restart got the user off this screen.
+    String? error;
+    try {
+      await ref.read(authProvider.notifier).resendVerificationEmail();
+    } catch (e) {
+      error = apiErrorMessage(e);
+    } finally {
+      if (mounted) setState(() => _resending = false);
     }
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(error ?? 'Verification email resent!')),
+    );
   }
 
   @override

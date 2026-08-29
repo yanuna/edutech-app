@@ -89,7 +89,17 @@ class CheckoutResponse {
   final String gatewayName;
   final int amountInPaise;
   final String amountInRupees;
-  final String? payPageUrl; // PhonePe only
+
+  /// Hosted pay page for redirect gateways (Paytm / PayU / Atom / PhonePe).
+  final String? payPageUrl;
+
+  /// False when a coupon covered the whole price: the plan is already granted
+  /// and the app must skip the payment sheet entirely. Every Indian gateway
+  /// rejects a ₹0 order, so this used to die inside the gateway call.
+  final bool requiresPayment;
+
+  /// True when a discount was applied, for the confirmation UI.
+  final bool discountApplied;
 
   const CheckoutResponse({
     required this.orderId,
@@ -98,14 +108,20 @@ class CheckoutResponse {
     required this.amountInPaise,
     required this.amountInRupees,
     this.payPageUrl,
+    this.requiresPayment = true,
+    this.discountApplied = false,
   });
 
   factory CheckoutResponse.fromJson(Map<String, dynamic> j) => CheckoutResponse(
-    orderId: j['order_id'] as String,
-    gatewayOrderId: j['gateway_order_id'] as String,
-    gatewayName: j['gateway_name'] as String,
-    amountInPaise: j['amount_in_paise'] as int,
-    amountInRupees: j['amount_in_rupees'] as String,
+    // Defensive casts: a gateway error response reaching this parser used to
+    // throw a raw type error instead of surfacing the server's message.
+    orderId: (j['order_id'] ?? '').toString(),
+    gatewayOrderId: (j['gateway_order_id'] ?? '').toString(),
+    gatewayName: (j['gateway_name'] ?? '').toString(),
+    amountInPaise: (j['amount_in_paise'] as num?)?.toInt() ?? 0,
+    amountInRupees: (j['amount_in_rupees'] ?? '0.00').toString(),
     payPageUrl: j['pay_page_url'] as String?,
+    requiresPayment: j['requires_payment'] as bool? ?? true,
+    discountApplied: j['discount_applied'] as bool? ?? false,
   );
 }

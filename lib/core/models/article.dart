@@ -32,7 +32,8 @@ class ArticleCard {
   });
 
   factory ArticleCard.fromJson(Map<String, dynamic> j) => ArticleCard(
-    id: j['id'] as int,
+    // Tolerant: a list endpoint that omits `id` should degrade, not throw.
+    id: (j['id'] as num?)?.toInt() ?? 0,
     slug: j['slug'] as String,
     title: j['title'] as String? ?? '',
     summary: j['summary'] as String?,
@@ -75,7 +76,8 @@ class ArticleTag {
   const ArticleTag({required this.id, required this.slug, required this.name, required this.type});
 
   factory ArticleTag.fromJson(Map<String, dynamic> j) => ArticleTag(
-    id: j['id'] as int,
+    // Tolerant: a list endpoint that omits `id` should degrade, not throw.
+    id: (j['id'] as num?)?.toInt() ?? 0,
     slug: j['slug'] as String? ?? '',
     name: j['name'] as String? ?? '',
     type: j['type'] as String? ?? 'general',

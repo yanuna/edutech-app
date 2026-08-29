@@ -75,7 +75,9 @@ class _ReviewCard extends StatelessWidget {
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: const Color(0xFF6366F1).withValues(alpha: .07), borderRadius: BorderRadius.circular(10), border: Border(left: const BorderSide(color: Color(0xFF6366F1), width: 3))),
+              decoration: BoxDecoration(color: const Color(0xFF6366F1).withValues(alpha: .07), borderRadius: BorderRadius.circular(10), border: const Border(
+                left: BorderSide(color: Color(0xFF6366F1), width: 3),
+              )),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 const Text('Explanation', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5, color: Color(0xFF4F46E5))),
                 const SizedBox(height: 4),

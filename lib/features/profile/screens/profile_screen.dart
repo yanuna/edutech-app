@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/api/api_client.dart';
+import '../../../core/api/api_endpoints.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/subscription_provider.dart';
 import '../../../shared/widgets/app_widgets.dart';
@@ -234,6 +236,16 @@ class ProfileScreen extends ConsumerWidget {
                         color: Colors.red,
                         onTap: () => _confirmLogout(context, ref),
                       ),
+                      // Both stores require an in-app way to delete an account.
+                      // The backend endpoint existed and was fully implemented,
+                      // but nothing in the app ever called it — an app-review
+                      // rejection waiting to happen.
+                      _Tile(
+                        icon: Icons.delete_forever_outlined,
+                        label: 'Delete Account',
+                        color: Colors.red,
+                        onTap: () => _confirmDeleteAccount(context, ref),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 32),
@@ -242,6 +254,91 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Permanent account deletion, with a typed confirmation so it cannot be
+  /// triggered by a stray tap.
+  void _confirmDeleteAccount(BuildContext context, WidgetRef ref) {
+    final controller = TextEditingController();
+    var deleting = false;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          title: const Text(
+            'Delete Account?',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'This permanently deletes your account, your exam history, '
+                'bookmarks and saved notes.\n\n'
+                'Any active subscription will be lost and is not refundable.\n\n'
+                'This cannot be undone.',
+                style: TextStyle(fontSize: 13.5, height: 1.45),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                enabled: !deleting,
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  labelText: 'Type DELETE to confirm',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                onChanged: (_) => setLocal(() {}),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: deleting ? null : () => Navigator.pop(dialogCtx),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: (controller.text.trim().toUpperCase() != 'DELETE' || deleting)
+                  ? null
+                  : () async {
+                      setLocal(() => deleting = true);
+                      try {
+                        await ApiClient.instance.delete(
+                          ApiEndpoints.deleteAccount,
+                        );
+                        if (dialogCtx.mounted) Navigator.pop(dialogCtx);
+                        await ref.read(authProvider.notifier).logout();
+                      } catch (e) {
+                        setLocal(() => deleting = false);
+                        if (!dialogCtx.mounted) return;
+                        ScaffoldMessenger.of(dialogCtx).showSnackBar(
+                          SnackBar(content: Text(apiErrorMessage(e))),
+                        );
+                      }
+                    },
+              child: deleting
+                  ? const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text('Delete forever'),
+            ),
+          ],
+        ),
       ),
     );
   }

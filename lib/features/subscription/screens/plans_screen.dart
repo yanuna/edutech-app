@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/providers/subscription_provider.dart';
 import '../../../core/models/subscription.dart';
 import '../../../shared/widgets/app_widgets.dart';
+import '../../../core/api/api_client.dart';
 
 class PlansScreen extends ConsumerWidget {
   const PlansScreen({super.key});
@@ -118,7 +119,7 @@ class PlansScreen extends ConsumerWidget {
             ),
             error: (e, _) => SliverToBoxAdapter(
               child: ErrorRetryWidget(
-                message: e.toString(),
+                message: apiErrorMessage(e),
                 onRetry: () => ref.invalidate(subscriptionPlansProvider),
               ),
             ),
@@ -260,8 +261,14 @@ class _PlanCard extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
+                    // The gateway is NOT hardcoded any more. Sending
+                    // gateway=razorpay overrode the admin's configured gateway
+                    // (the server only falls back to its own setting when the
+                    // field is absent), so switching to Paytm in the admin panel
+                    // changed nothing and every purchase went to a gateway that
+                    // might have no keys at all.
                     onPressed: () => context.push(
-                      '/profile/checkout?plan_id=${plan.id}&gateway=razorpay',
+                      '/profile/checkout?plan_id=${plan.id}',
                     ),
                     child: const Text('Subscribe Now'),
                   ),

@@ -16,7 +16,8 @@ class ExamScreen extends ConsumerStatefulWidget {
   ConsumerState<ExamScreen> createState() => _ExamScreenState();
 }
 
-class _ExamScreenState extends ConsumerState<ExamScreen> {
+class _ExamScreenState extends ConsumerState<ExamScreen>
+    with WidgetsBindingObserver {
   int _currentIndex = 0;
   Timer? _timer;
   Duration _remaining = Duration.zero;
@@ -27,7 +28,20 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
   @override
   void initState() {
     super.initState();
+    // The server auto-submits an attempt after 3 background switches, but the
+    // app always sent 0 — nothing ever counted them, so the rule never fired.
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrap());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      final notifier = ref.read(examSessionProvider.notifier);
+      notifier.appBackgroundCount++;
+      // Leaving the app is exactly when unsent answers are most at risk.
+      notifier.scheduleSync(widget.sessionId, delay: Duration.zero);
+    }
   }
 
   /// Loads the attempt (restoring after a crash/restart when there's no
@@ -131,20 +145,27 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
     setState(() => _submitting = true);
 
     final notifier = ref.read(examSessionProvider.notifier);
-    // Final sync
-    final session = ref.read(examSessionProvider).valueOrNull;
-    if (session != null) {
-      final answers = session.questions
-          .where((q) => q.selectedOption != null)
-          .map(
-            (q) => {
-              'question_id': q.questionId,
-              'selected_option': q.selectedOption,
-              'status': q.status,
-            },
-          )
-          .toList();
-      await notifier.syncAnswers(session.sessionId, answers);
+
+    // Block on the final flush. Scoring reads what the SERVER holds, so
+    // submitting with answers still unsent silently grades them as zero.
+    final synced = await notifier.flushAnswers(widget.sessionId);
+
+    if (!synced && !auto) {
+      // A manual submit stops here so the student can retry rather than
+      // unknowingly submitting an incomplete paper.
+      if (mounted) {
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Some answers have not reached the server yet. '
+              'Check your connection and tap Submit again.',
+            ),
+            duration: Duration(seconds: 5),
+          ),
+        );
+      }
+      return;
     }
 
     final result = await notifier.submitExam(widget.sessionId);
@@ -203,6 +224,7 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _pageCtrl.dispose();
     super.dispose();
@@ -310,30 +332,16 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
                             text: q.optionText(pos),
                             selected: selected,
                             onTap: () {
-                              ref
-                                  .read(examSessionProvider.notifier)
-                                  .answerQuestion(_currentIndex, pos);
+                              final notifier =
+                                  ref.read(examSessionProvider.notifier);
+                              notifier.answerQuestion(_currentIndex, pos);
                               _persist(); // local crash-recovery checkpoint
-                              // Persist after every answer so progress survives a
-                              // crash/timeout. (The old `_currentIndex % 5` check
-                              // only synced on questions 1, 6, 11, … and silently
-                              // dropped answers on every other question.)
-                              final s = ref.read(examSessionProvider).valueOrNull;
-                              if (s != null) {
-                                final answers = s.questions
-                                    .where((q) => q.selectedOption != null)
-                                    .map(
-                                      (q) => {
-                                        'question_id': q.questionId,
-                                        'selected_option': q.selectedOption,
-                                        'status': q.status,
-                                      },
-                                    )
-                                    .toList();
-                                ref
-                                    .read(examSessionProvider.notifier)
-                                    .syncAnswers(s.sessionId, answers);
-                              }
+                              // Only the changed answer is queued, and taps are
+                              // coalesced. The old code rebuilt and resent the
+                              // ENTIRE answered set on every tap — 5 POSTs per tap
+                              // late in a 100-question paper — which tripped the
+                              // 30/min throttle and silently lost answers.
+                              notifier.scheduleSync(widget.sessionId);
                             },
                           );
                         }),
@@ -342,10 +350,13 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
                         // Mark for review
                         OutlinedButton.icon(
                           onPressed: () {
-                            ref
-                                .read(examSessionProvider.notifier)
-                                .markForReview(_currentIndex);
+                            final notifier =
+                                ref.read(examSessionProvider.notifier);
+                            notifier.markForReview(_currentIndex);
                             _persist();
+                            // Review marks were never synced, so resuming after a
+                            // crash lost every one of them.
+                            notifier.scheduleSync(widget.sessionId);
                           },
                           icon: Icon(
                             q.status == 'marked_for_review'

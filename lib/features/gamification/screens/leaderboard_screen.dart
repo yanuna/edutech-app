@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/gamification_provider.dart';
 import '../../../shared/widgets/app_widgets.dart';
+import '../../../core/api/api_client.dart';
 
 class LeaderboardScreen extends ConsumerStatefulWidget {
   const LeaderboardScreen({super.key});
@@ -51,7 +52,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           return data.when(
             loading: () => const LoadingWidget(message: 'Loading leaderboard…'),
             error: (e, _) => ErrorRetryWidget(
-              message: e.toString(),
+              message: apiErrorMessage(e),
               onRetry: () => ref.invalidate(leaderboardProvider(period)),
             ),
             data: (lb) => _Board(lb: lb, myUserId: me?.id),

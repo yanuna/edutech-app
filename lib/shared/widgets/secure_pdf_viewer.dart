@@ -109,12 +109,18 @@ class _SecurePdfViewerState extends State<SecurePdfViewer> {
           ? await SecureFileStore.instance.read(widget.offlineId!)
           : (widget.loader != null ? await widget.loader!() : null);
 
+      // _load() is fired from initState and awaits a full PDF download, so the
+      // user can easily back out before it returns — every setState below then
+      // fired after dispose().
+      if (!mounted) return;
+
       if (bytes == null) {
         setState(() => _error = 'This document is not available offline.');
         return;
       }
       setState(() => _bytes = bytes);
     } catch (_) {
+      if (!mounted) return;
       setState(() => _error = 'Unable to open this document.');
     }
   }

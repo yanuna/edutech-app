@@ -59,10 +59,8 @@ final topicsProvider = FutureProvider.family<List<Topic>, int>((
 
 // ─── Content for a topic ──────────────────────────────────────────────────
 
-final topicContentProvider = FutureProvider.family<List<TopicContent>, int>((
-  ref,
-  topicId,
-) async {
+final topicContentProvider =
+    FutureProvider.family<TopicContentBundle, int>((ref, topicId) async {
   final lang = ref.watch(
     contentLanguageProvider,
   ); // re-fetches on language change
@@ -70,7 +68,7 @@ final topicContentProvider = FutureProvider.family<List<TopicContent>, int>((
     ApiEndpoints.topicContent(topicId),
     params: {'lang': lang},
   );
-  return (res.data['contents'] as List)
-      .map((e) => TopicContent.fromJson(e as Map<String, dynamic>))
-      .toList();
+  // The whole response is kept, not just `contents` — `topic.is_paid` is what
+  // decides whether the paywall belongs on screen.
+  return TopicContentBundle.fromJson(Map<String, dynamic>.from(res.data as Map));
 });

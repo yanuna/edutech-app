@@ -30,7 +30,7 @@ class CheckoutNotifier extends StateNotifier<AsyncValue<CheckoutResponse?>> {
 
   Future<CheckoutResponse?> initiateCheckout({
     required int planId,
-    required String gateway,
+    String gateway = '',
     String? couponCode,
   }) async {
     state = const AsyncValue.loading();
@@ -39,7 +39,8 @@ class CheckoutNotifier extends StateNotifier<AsyncValue<CheckoutResponse?>> {
         ApiEndpoints.checkout,
         data: {
           'plan_id': planId,
-          'gateway': gateway,
+          // Omitted when empty so the server uses the admin's Active Gateway.
+          if (gateway.isNotEmpty) 'gateway': gateway,
           'coupon_code': ?couponCode,
         },
       );
@@ -54,25 +55,31 @@ class CheckoutNotifier extends StateNotifier<AsyncValue<CheckoutResponse?>> {
     }
   }
 
+  /// Set when the last verifyPayment() failed, so the UI can say WHY.
+  String? lastVerifyError;
+
   Future<bool> verifyPayment({
     required String orderId,
     required String gateway,
     String? paymentId,
     String? signature,
   }) async {
+    lastVerifyError = null;
     try {
       await ApiClient.instance.post(
         ApiEndpoints.verifyPayment,
         data: {
           'order_id': orderId,
-          'gateway': gateway,
+          if (gateway.isNotEmpty) 'gateway': gateway,
           'payment_id': ?paymentId,
           'signature': ?signature,
         },
       );
       state = const AsyncValue.data(null);
       return true;
-    } catch (_) {
+    } catch (e) {
+      // Swallowing this told a paying user nothing at all.
+      lastVerifyError = apiErrorMessage(e);
       return false;
     }
   }
@@ -105,9 +112,16 @@ class CouponNotifier extends StateNotifier<CouponState> {
         ApiEndpoints.applyCoupon,
         data: {'coupon_code': code, 'plan_id': planId},
       );
-      state = CouponState(result: res.data as Map<String, dynamic>);
+      final data = Map<String, dynamic>.from(res.data as Map);
+      // The API returns paise only; the checkout screen was reading a
+      // `discount_in_rupees` key that has never existed, and rendered "₹null".
+      final paise = (data['discount_in_paise'] as num?)?.toDouble() ?? 0;
+      data['discount_in_rupees'] = (paise / 100).toStringAsFixed(2);
+      state = CouponState(result: data);
     } catch (e) {
-      state = CouponState(error: e.toString());
+      // e.toString() printed the whole DioException — "…because the response
+      // has a status code of 422…" — instead of the backend's own message.
+      state = CouponState(error: apiErrorMessage(e));
     }
   }
 
