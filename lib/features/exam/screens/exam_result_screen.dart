@@ -7,6 +7,7 @@ import '../../../core/models/exam.dart';
 import '../../../shared/widgets/app_widgets.dart';
 import '../../../shared/widgets/ad_banner_widget.dart';
 import '../../../shared/widgets/rich_content_view.dart';
+import '../../../core/api/api_client.dart';
 
 class ExamResultScreen extends ConsumerWidget {
   final int sessionId;
@@ -21,7 +22,7 @@ class ExamResultScreen extends ConsumerWidget {
         data: (r) => _ResultBody(result: r),
         loading: () => const LoadingWidget(message: 'Loading results...'),
         error: (e, _) => ErrorRetryWidget(
-          message: e.toString(),
+          message: apiErrorMessage(e),
           onRetry: () => ref.invalidate(examResultProvider(sessionId)),
         ),
       ),

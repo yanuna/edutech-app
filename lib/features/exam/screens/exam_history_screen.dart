@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/providers/exam_provider.dart';
 import '../../../core/models/exam.dart';
 import '../../../shared/widgets/app_widgets.dart';
+import '../../../core/api/api_client.dart';
 
 class ExamHistoryScreen extends ConsumerWidget {
   const ExamHistoryScreen({super.key});
@@ -69,7 +70,7 @@ class ExamHistoryScreen extends ConsumerWidget {
           itemBuilder: (_, _) => const ShimmerCard(height: 80),
         ),
         error: (e, _) => ErrorRetryWidget(
-          message: e.toString(),
+          message: apiErrorMessage(e),
           onRetry: () => ref.invalidate(examHistoryProvider),
         ),
       ),

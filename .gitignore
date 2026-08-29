@@ -46,3 +46,6 @@ app.*.map.json
 
 # Claude Code local settings (machine-specific; not shared)
 .claude/settings.local.json
+
+# Kotlin incremental-compilation cache (build artifact)
+android/.kotlin/

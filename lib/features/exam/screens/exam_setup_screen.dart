@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/providers/catalog_provider.dart';
 import '../../../core/providers/exam_provider.dart';
 import '../../../shared/widgets/app_widgets.dart';
+import '../../../core/api/api_client.dart';
 
 class ExamSetupScreen extends ConsumerStatefulWidget {
   const ExamSetupScreen({super.key});
@@ -197,7 +198,7 @@ class _ExamSetupScreenState extends ConsumerState<ExamSetupScreen> {
               ),
               loading: () => const ShimmerCard(height: 60),
               error: (e, _) => ErrorRetryWidget(
-                message: e.toString(),
+                message: apiErrorMessage(e),
                 onRetry: () => ref.invalidate(subjectsProvider),
               ),
             ),

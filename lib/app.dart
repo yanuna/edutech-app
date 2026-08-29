@@ -346,9 +346,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'checkout',
                     parentNavigatorKey: _shellKey,
+                    // int.parse(...!) threw inside the route builder for any
+                    // deep link with a missing or non-numeric plan_id.
+                    // An empty gateway means "let the server decide", which is
+                    // what the admin panel's Active Gateway setting is for.
                     builder: (_, s) => CheckoutScreen(
-                      planId: int.parse(s.uri.queryParameters['plan_id']!),
-                      gateway: s.uri.queryParameters['gateway'] ?? 'razorpay',
+                      planId:
+                          int.tryParse(s.uri.queryParameters['plan_id'] ?? '') ?? 0,
+                      gateway: s.uri.queryParameters['gateway'] ?? '',
                     ),
                   ),
                   GoRoute(

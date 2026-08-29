@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/news_provider.dart';
 import '../widgets/news_card.dart';
 import '../widgets/news_shimmer.dart';
+import '../../../core/api/api_client.dart';
 
 class CurrentNewsScreen extends ConsumerStatefulWidget {
   const CurrentNewsScreen({super.key});
@@ -206,7 +207,7 @@ class _NewsFeed extends ConsumerWidget {
     return articlesAsync.when(
       loading: () => const NewsShimmer(),
       error: (e, _) => _ErrorView(
-        message: e.toString(),
+        message: apiErrorMessage(e),
         onRetry: () =>
             ref.read(newsArticlesProvider(source).notifier).refresh(),
       ),

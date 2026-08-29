@@ -5,6 +5,7 @@ import '../../../core/providers/subscription_provider.dart';
 import '../../../core/providers/test_series_provider.dart';
 import '../../../shared/widgets/app_widgets.dart';
 import '../widgets/test_series_card.dart';
+import '../../../core/api/api_client.dart';
 
 class TestSeriesScreen extends ConsumerWidget {
   const TestSeriesScreen({super.key});
@@ -102,7 +103,7 @@ class _ExamGrid extends ConsumerWidget {
         itemBuilder: (_, _) => const ShimmerCard(height: 220),
       ),
       error: (e, _) => ErrorRetryWidget(
-        message: e.toString(),
+        message: apiErrorMessage(e),
         onRetry: () => ref.invalidate(testSeriesListProvider(type)),
       ),
     );

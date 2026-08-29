@@ -152,7 +152,9 @@ class StyledHtmlView extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
         decoration: BoxDecoration(
           color: callout.bg,
-          border: Border(left: BorderSide(color: callout.bar, width: 4)),
+          border: Border(
+            left: BorderSide(color: callout.bar, width: 4),
+          ),
           borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
         ),
         child: _render(e.innerHtml, p),
@@ -167,7 +169,9 @@ class StyledHtmlView extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
         decoration: BoxDecoration(
           color: p.accentSoft,
-          border: Border(left: BorderSide(color: p.accent, width: 4)),
+          border: Border(
+            left: BorderSide(color: p.accent, width: 4),
+          ),
           borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
         ),
         child: DefaultTextStyle.merge(

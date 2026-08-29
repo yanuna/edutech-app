@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/providers/catalog_provider.dart';
 import '../../../core/models/catalog.dart';
 import '../../../shared/widgets/app_widgets.dart';
+import '../../../core/api/api_client.dart';
 
 class SubjectsScreen extends ConsumerWidget {
   const SubjectsScreen({super.key});
@@ -32,7 +33,7 @@ class SubjectsScreen extends ConsumerWidget {
           itemBuilder: (_, _) => const ShimmerCard(height: 90),
         ),
         error: (e, _) => ErrorRetryWidget(
-          message: e.toString(),
+          message: apiErrorMessage(e),
           onRetry: () => ref.invalidate(subjectsProvider),
         ),
       ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/test_series.dart';
 import '../../../core/providers/test_series_provider.dart';
 import '../../../shared/widgets/app_widgets.dart';
+import '../../../core/api/api_client.dart';
 
 class ExamLeaderboardScreen extends ConsumerWidget {
   final int examId;
@@ -46,7 +47,7 @@ class ExamLeaderboardScreen extends ConsumerWidget {
           itemBuilder: (_, _) => const ShimmerCard(height: 64),
         ),
         error: (e, _) => ErrorRetryWidget(
-          message: e.toString(),
+          message: apiErrorMessage(e),
           onRetry: () => ref.invalidate(examLeaderboardProvider(examId)),
         ),
       ),

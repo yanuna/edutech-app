@@ -129,7 +129,9 @@ class _CalloutBox extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: _accent.withValues(alpha: theme.isDark ? .14 : .08),
-        border: Border(left: BorderSide(color: _accent, width: 4)),
+        border: Border(
+          left: BorderSide(color: _accent, width: 4),
+        ),
         borderRadius: const BorderRadius.horizontal(right: Radius.circular(10)),
       ),
       child: Column(

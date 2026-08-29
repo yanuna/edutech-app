@@ -82,10 +82,16 @@ class _TopicContentScreenState extends ConsumerState<TopicContentScreen> {
         ],
       ),
       body: content.when(
-        data: (items) {
-          // Check if paywall should be shown
-          final isLocked =
-              subStatus.whenOrNull(data: (s) => !s.hasAccess) ?? false;
+        data: (bundle) {
+          final items = bundle.contents;
+
+          // Show the paywall only for content that is ACTUALLY premium. The old
+          // rule locked on "no active subscription" alone, so every free topic
+          // was unreachable for free users even though the server had already
+          // returned its content.
+          final hasAccess =
+              subStatus.whenOrNull(data: (s) => s.hasAccess) ?? false;
+          final isLocked = bundle.isPaid && !hasAccess;
 
           if (isLocked) {
             return Center(
@@ -172,7 +178,7 @@ class _TopicContentScreenState extends ConsumerState<TopicContentScreen> {
         },
         loading: () => const LoadingWidget(message: 'Loading content...'),
         error: (e, _) => ErrorRetryWidget(
-          message: e.toString(),
+          message: apiErrorMessage(e),
           onRetry: () => ref.invalidate(topicContentProvider(widget.topicId)),
         ),
       ),

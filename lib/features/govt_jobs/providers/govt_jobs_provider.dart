@@ -35,6 +35,7 @@ class GovtJobsNotifier extends StateNotifier<AsyncValue<GovtJobsState>> {
   }
 
   final GovtJobsRepository _repo;
+
   String _q = '';
   String? _category;
   int _page = 1;
@@ -103,6 +104,9 @@ class BookmarkSlugsNotifier extends StateNotifier<Set<String>> {
 
   final GovtJobsRepository _repo;
 
+  /// Called after a bookmark changes so dependent lists can refresh.
+  void Function()? onChanged;
+
   Future<void> _load() async {
     try {
       final jobs = await _repo.getBookmarks();
@@ -116,6 +120,10 @@ class BookmarkSlugsNotifier extends StateNotifier<Set<String>> {
     try {
       final on = await _repo.toggleBookmark(slug);
       state = on ? {...state, slug} : (state.toSet()..remove(slug));
+      // savedJobsProvider is a plain (non-autoDispose) FutureProvider, so
+      // without this the Saved Jobs list kept showing the pre-toggle set until
+      // a manual pull-to-refresh or an app restart.
+      onChanged?.call();
       return on;
     } catch (_) {
       return state.contains(slug);
@@ -125,7 +133,8 @@ class BookmarkSlugsNotifier extends StateNotifier<Set<String>> {
 
 final bookmarkedSlugsProvider =
     StateNotifierProvider<BookmarkSlugsNotifier, Set<String>>(
-      (ref) => BookmarkSlugsNotifier(ref.read(govtJobsRepositoryProvider)),
+      (ref) => BookmarkSlugsNotifier(ref.read(govtJobsRepositoryProvider))
+        ..onChanged = () => ref.invalidate(savedJobsProvider),
     );
 
 // ── A single job's detail ────────────────────────────────────────────────────

@@ -22,8 +22,13 @@ class _VerifyMobileScreenState extends ConsumerState<VerifyMobileScreen> {
   @override
   void initState() {
     super.initState();
-    // A code was already sent at registration; for other entry points, send one.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _send(initial: true));
+    // Registration already sends a code (AuthController::register), and this
+    // used to fire another one unconditionally — so simply opening the screen
+    // burned a paid SMS and ate into the 5/min throttle, meaning a user who
+    // came back to type the code they had just received could be rate-limited
+    // out of verifying at all. Start the cooldown instead; "Resend" is one tap
+    // away if the first message never arrived.
+    _startCooldown();
   }
 
   @override

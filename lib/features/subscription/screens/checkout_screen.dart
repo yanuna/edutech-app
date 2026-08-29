@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import '../../../core/api/api_client.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/subscription_provider.dart';
 import '../../../core/services/startup_service.dart';
@@ -23,6 +24,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _couponCtrl = TextEditingController();
   Razorpay? _razorpay;
   String? _pendingOrderId;
+
+  /// The gateway to charge through. An explicit value in the route wins;
+  /// otherwise the admin's Active Gateway (delivered by /startup) is used.
+  /// Nothing here is hardcoded — that is what made the admin setting inert.
+  String get _gateway {
+    if (widget.gateway.isNotEmpty) return widget.gateway;
+    final cfg = ref.read(paymentConfigProvider);
+    final active = cfg['active_gateway'] ?? '';
+    return active.isNotEmpty ? active : 'razorpay';
+  }
 
   @override
   void initState() {
@@ -53,20 +64,54 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ? _couponCtrl.text.trim()
         : null;
 
+    final gateway = _gateway;
+
     final checkout = await ref
         .read(checkoutProvider.notifier)
         .initiateCheckout(
           planId: widget.planId,
-          gateway: widget.gateway,
+          gateway: gateway,
           couponCode: coupon,
         );
 
-    if (checkout == null || !mounted) return;
+    if (!mounted) return;
+
+    if (checkout == null) {
+      // The provider stored the error, but build() only ever rendered a spinner
+      // or a button — so a failed checkout did absolutely nothing on screen and
+      // the user just tapped "Pay Securely" again and again.
+      final err = ref.read(checkoutProvider).error;
+      _showError(
+        err != null
+            ? apiErrorMessage(err)
+            : 'Could not start the payment. Please try again.',
+      );
+      return;
+    }
+
     _pendingOrderId = checkout.orderId;
 
-    if (widget.gateway == 'razorpay') {
+    // A 100%-off coupon is granted outright — there is nothing to pay.
+    if (checkout.requiresPayment == false) {
+      ref.invalidate(subscriptionStatusProvider);
+      context.pushReplacement('/profile/payment-success');
+      return;
+    }
+
+    if (gateway == 'razorpay') {
       final user = ref.read(authProvider).user;
       final rzpKey = ref.read(paymentConfigProvider)['razorpay_key_id'] ?? '';
+
+      // Opening the sheet with an empty key dies inside the SDK with no
+      // explanation. This happens whenever /startup failed on launch, which
+      // startup_service swallows.
+      if (rzpKey.isEmpty) {
+        _showError(
+          'Payments are temporarily unavailable. Please try again in a moment.',
+        );
+        return;
+      }
+
       final options = {
         'key': rzpKey,
         'amount': checkout.amountInPaise,
@@ -80,17 +125,33 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         },
         'theme': {'color': '#4F46E5'},
       };
-      _razorpay!.open(options);
+      try {
+        _razorpay!.open(options);
+      } catch (e) {
+        _showError('Could not open the payment sheet. Please try again.');
+      }
     } else if (checkout.payPageUrl != null && checkout.payPageUrl!.isNotEmpty) {
-      // Paytm / PayU / Atom — open redirect URL in WebView
-      if (!mounted) return;
+      // Paytm / PayU / Atom — open the hosted pay page in a WebView.
       context.push(
         '/profile/payment-webview'
         '?order_id=${Uri.encodeComponent(_pendingOrderId!)}'
         '&pay_page_url=${Uri.encodeComponent(checkout.payPageUrl!)}'
-        '&gateway=${Uri.encodeComponent(widget.gateway)}',
+        '&gateway=${Uri.encodeComponent(gateway)}',
+      );
+    } else {
+      // Neither an SDK sheet nor a pay page — previously this fell through in
+      // total silence.
+      _showError(
+        'This payment method is not available right now. Please try another one.',
       );
     }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 4)),
+    );
   }
 
   Future<void> _onSuccess(PaymentSuccessResponse response) async {
@@ -108,8 +169,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ref.invalidate(subscriptionStatusProvider);
         context.pushReplacement('/profile/payment-success');
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Payment verification failed.')),
+        final reason = ref.read(checkoutProvider.notifier).lastVerifyError;
+        _showError(
+          reason ??
+              'We could not confirm this payment. If money was deducted it will '
+                  'activate automatically within a few minutes.',
         );
       }
     }
@@ -249,7 +313,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   const Icon(Icons.payment, color: Color(0xFF4F46E5)),
                   const SizedBox(width: 12),
                   Text(
-                    _gatewayLabel(widget.gateway),
+                    _gatewayLabel(_gateway),
                     style: const TextStyle(
                       fontFamily: 'Poppins',
                       fontWeight: FontWeight.w500,

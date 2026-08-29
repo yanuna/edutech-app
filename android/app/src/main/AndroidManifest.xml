@@ -1,8 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- usesCleartextTraffic is set in src/debug/AndroidManifest.xml only, so
+         release builds refuse plaintext http:// for images, PDFs, job links and
+         gateway pay pages. -->
     <application
         android:label="EduTech"
-        android:usesCleartextTraffic="true"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -27,9 +29,18 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <!-- AdMob App ID. This is Google's official TEST App ID — replace with your
-             real AdMob app ID before a production release. Required, or
-             MobileAds.initialize() crashes at startup. -->
+        <!--
+          AdMob App ID.
+
+          ⚠️  RELEASE BLOCKER: the value below is Google's public TEST App ID.
+          Shipping it means no real ads ever serve (zero ad revenue) and it
+          breaches AdMob policy. Replace it with the App ID from
+          AdMob → Apps → your app → App settings before publishing.
+
+          It cannot simply be removed: MobileAds.initialize() crashes at startup
+          without it. The per-unit ad IDs are already admin-managed
+          (Settings → Advertisements); only this app-level ID must live here.
+        -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3940256099942544~3347511713" />
